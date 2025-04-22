@@ -4,35 +4,35 @@
   <meta charset="UTF-8" />
   <title>ログイン | Minecraft チャット</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    /* シンプルに中央揃え。お好みで Tailwind CSS など導入可 */
-    body { display: flex; justify-content: center; align-items: center; height: 100vh; margin:0; font-family: sans-serif; }
-    .card { padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius:8px; width:300px; }
-    input, button { width:100%; padding:0.5rem; margin-top:1rem; }
-    .link { text-align:center; margin-top:0.5rem; font-size:0.9rem; }
-  </style>
+  <!-- 追加: 共通スタイルを読み込む -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="card">
+  <div class="container">
     <h2>ログイン</h2>
-    <input id="email"    type="email"    placeholder="メールアドレス" />
-    <input id="password" type="password" placeholder="パスワード" />
-    <button id="btnLogin">ログイン</button>
+    <div class="input-group">
+      <label for="email">メールアドレス</label>
+      <input id="email" type="email" placeholder="メールアドレス" />
+    </div>
+    <div class="input-group">
+      <label for="password">パスワード</label>
+      <input id="password" type="password" placeholder="パスワード" />
+    </div>
+    <button id="btnLogin" class="login-btn">ログイン</button>
     <div class="link">
       <a href="register.html">新規登録はこちら</a>
     </div>
-    <div id="error" style="color:red; margin-top:0.5rem;"></div>
+    <div id="error" class="error-banner"></div>
   </div>
 
   <script type="module">
-    import { loginWithEmail, observeAuth } from './auth.js';
+    import { auth, loginWithEmail, observeAuth } from './auth.js';
 
     const emailEl    = document.getElementById('email');
     const passEl     = document.getElementById('password');
     const btnLogin   = document.getElementById('btnLogin');
     const errorEl    = document.getElementById('error');
 
-    // すでにログイン済みならチャット画面へ
     observeAuth(user => {
       if (user && user.emailVerified) {
         location.href = 'index.html';
@@ -40,17 +40,16 @@
     });
 
     btnLogin.addEventListener('click', async () => {
+      errorEl.style.display = 'none';
       errorEl.textContent = '';
       try {
-        const email = emailEl.value;
-        const pw    = passEl.value;
-        await loginWithEmail(email, pw);
-        // メール未認証なら止める
+        await loginWithEmail(emailEl.value, passEl.value);
         if (!auth.currentUser.emailVerified) {
           throw new Error('認証メールを確認してください。');
         }
       } catch (e) {
         errorEl.textContent = e.message;
+        errorEl.style.display = '';
       }
     });
   </script>
