@@ -35,7 +35,7 @@
 
     // すでにログイン済みならトップページへ
     observeAuth(user => {
-      iif (user && user.emailVerified) {
+      if (user && user.emailVerified) {
         // まだ表示名を設定していなければ setup.html へ
         if (!user.displayName) {
           location.href = 'setup.html';
