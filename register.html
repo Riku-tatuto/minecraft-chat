@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>新規登録 | Minecraft チャット</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- 追加: 共通スタイルを読み込む -->
+  <!-- 外部CSSを読み込む -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -16,14 +16,14 @@
     </div>
     <div class="input-group">
       <label for="password">パスワード（6文字以上）</label>
-      <input id="password" type="password" placeholder="パスワード（6文字以上）" />
+      <input id="password" type="password" placeholder="パスワード" />
     </div>
     <div class="input-group">
       <label for="password2">パスワード再入力</label>
       <input id="password2" type="password" placeholder="パスワード再入力" />
     </div>
     <button id="btnRegister" class="login-btn">登録＆認証メール送信</button>
-    <div class="link">
+    <div class="link" style="text-align:center; margin-top:0.5rem; font-size:0.9rem;">
       <a href="login.html">ログインはこちら</a>
     </div>
     <div id="error" class="error-banner"></div>
@@ -41,6 +41,7 @@
     const infoEl   = document.getElementById('info');
 
     btnReg.addEventListener('click', async () => {
+      errorEl.textContent = '';
       errorEl.style.display = 'none';
       infoEl.textContent  = '';
       try {
@@ -51,7 +52,7 @@
         infoEl.textContent = '登録成功！認証メールを送信しました。受信BOXを確認してください。';
       } catch (e) {
         errorEl.textContent = e.message;
-        errorEl.style.display = '';
+        errorEl.style.display = 'block';
       }
     });
   </script>
