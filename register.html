@@ -32,15 +32,27 @@
       <input id="password2" type="password" placeholder="パスワード再入力" />
     </div>
     <button id="btnRegister" class="login-btn">登録＆認証メール送信</button>
+
+    <!-- 認証メール再送信ボタン -->
+    <button id="btnResend" class="login-btn" style="background:#28a745; display:none; margin-top:1rem;">
+      認証メール再送信
+    </button>
+
     <div id="error" class="error-banner"></div>
     <div id="info" style="color:green; margin-top:0.5rem;"></div>
+
     <div class="link" style="text-align:center; margin-top:0.5rem; font-size:0.9rem;">
       <a href="login.html">ログインはこちら</a>
     </div>
   </div>
 
   <script type="module">
-    import { registerWithEmail, observeAuth, logout } from './auth.js';
+    import {
+      registerWithEmail,
+      observeAuth,
+      logout,
+      resendVerificationEmail
+    } from './auth.js';
 
     const navUser   = document.getElementById('navUser');
     const navLogin  = document.getElementById('navLogin');
@@ -49,6 +61,7 @@
     const pwEl      = document.getElementById('password');
     const pw2El     = document.getElementById('password2');
     const btnReg    = document.getElementById('btnRegister');
+    const btnResend = document.getElementById('btnResend');
     const errorEl   = document.getElementById('error');
     const infoEl    = document.getElementById('info');
 
@@ -72,16 +85,29 @@
     navLogout.addEventListener('click', () => logout());
 
     btnReg.addEventListener('click', async () => {
-      errorEl.style.display = 'none';
-      infoEl.textContent    = '';
+      errorEl.style.display   = 'none';
+      infoEl.textContent      = '';
+      btnResend.style.display = 'none';
       try {
         if (pwEl.value !== pw2El.value) {
           throw new Error('パスワードが一致しません');
         }
         await registerWithEmail(emailEl.value, pwEl.value);
-        infoEl.textContent = '登録成功！認証メールを送信しました。受信BOXを確認してください。';
+        infoEl.textContent      = '登録成功！認証メールを送信しました。受信BOXを確認してください。';
+        btnResend.style.display = '';  // 成功後に再送ボタン表示
       } catch (e) {
-        errorEl.textContent = e.message;
+        errorEl.textContent     = e.message;
+        errorEl.style.display   = 'block';
+      }
+    });
+
+    btnResend.addEventListener('click', async () => {
+      try {
+        await resendVerificationEmail();
+        btnResend.textContent = '再送信しました！';
+        btnResend.disabled    = true;
+      } catch (e) {
+        errorEl.textContent   = e.message;
         errorEl.style.display = 'block';
       }
     });
