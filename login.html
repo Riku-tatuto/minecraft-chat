@@ -28,10 +28,14 @@
       <input id="password" type="password" placeholder="パスワード" />
     </div>
     <button id="btnLogin" class="login-btn">ログイン</button>
+
+    <!-- 認証メール再送信ボタン -->
     <button id="btnResend" class="login-btn" style="background:#28a745; display:none; margin-top:1rem;">
       認証メール再送信
     </button>
+
     <div id="error" class="error-banner"></div>
+
     <div class="link" style="text-align:center; margin-top:0.5rem; font-size:0.9rem;">
       <a href="register.html">新規登録はこちら</a>
     </div>
@@ -80,7 +84,7 @@
     navLogout.addEventListener('click', () => logout());
 
     btnLogin.addEventListener('click', async () => {
-      errorEl.style.display = 'none';
+      errorEl.style.display   = 'none';
       btnResend.style.display = 'none';
       try {
         await loginWithEmail(emailEl.value, passEl.value);
@@ -101,9 +105,9 @@
       try {
         await resendVerificationEmail();
         btnResend.textContent = '再送信しました！';
-        btnResend.disabled = true;
+        btnResend.disabled    = true;
       } catch (e) {
-        errorEl.textContent = e.message;
+        errorEl.textContent   = e.message;
         errorEl.style.display = 'block';
       }
     });
