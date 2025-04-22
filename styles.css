@@ -17,7 +17,7 @@ h1, h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #4C97FE;    /* ←変更 */
+  background: #4C97FE;    /* ← ナビバー背景色を変更 */
   color: white;
   padding: 10px 20px;
 }
@@ -29,16 +29,17 @@ h1, h2 {
 .navbar-menu .nav-link {
   margin-left: 1rem;
   color: white;
-  text-decoration: none;
+  text-decoration: none;  /* 下線を消す */
   cursor: pointer;
-  padding: 5px 10px;      /* ホバー時の背景が見えるように余白を追加 */
+  padding: 8px 16px;      /* ホバー範囲を大きく */
   border-radius: 4px;
 }
 
-/* ホバーまたはアクティブ時に色を変える */
+/* ホバーまたはアクティブ時の背景色 */
 .navbar-menu .nav-link:hover,
 .navbar-menu .nav-link.active {
-  background: #4180D8;    /* ←追加 */
+  background: #4180D8;    /* ← ホバー時の色 */
+  text-decoration: none;  /* 下線を消す */
 }
 
 /* コンテナ（ログイン・登録・ユーザー名設定） */
@@ -52,7 +53,6 @@ h1, h2 {
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* ... 以下は既存のスタイルをそのまま ... */
 .input-group {
   margin-bottom: 15px;
 }
