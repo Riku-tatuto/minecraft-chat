@@ -2,12 +2,21 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>新規登録 | Minecraft チャット</title>
+  <title>新規登録 | Minecraft 雑談掲示板</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- 外部CSSを読み込む -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- ナビバー -->
+  <header class="navbar">
+    <div class="navbar-title">🎮 Minecraft 雑談掲示板</div>
+    <div class="navbar-menu">
+      <span id="navUser"></span>
+      <a href="login.html" id="navLogin" class="nav-link">ログイン</a>
+      <span id="navLogout" class="nav-link" style="display:none;">ログアウト</span>
+    </div>
+  </header>
+
   <div class="container">
     <h2>新規登録</h2>
     <div class="input-group">
@@ -23,27 +32,48 @@
       <input id="password2" type="password" placeholder="パスワード再入力" />
     </div>
     <button id="btnRegister" class="login-btn">登録＆認証メール送信</button>
+    <div id="error" class="error-banner"></div>
+    <div id="info" style="color:green; margin-top:0.5rem;"></div>
     <div class="link" style="text-align:center; margin-top:0.5rem; font-size:0.9rem;">
       <a href="login.html">ログインはこちら</a>
     </div>
-    <div id="error" class="error-banner"></div>
-    <div id="info" style="color:green; margin-top:0.5rem;"></div>
   </div>
 
   <script type="module">
-    import { registerWithEmail } from './auth.js';
+    import { registerWithEmail, observeAuth, logout } from './auth.js';
 
-    const emailEl  = document.getElementById('email');
-    const pwEl     = document.getElementById('password');
-    const pw2El    = document.getElementById('password2');
-    const btnReg   = document.getElementById('btnRegister');
-    const errorEl  = document.getElementById('error');
-    const infoEl   = document.getElementById('info');
+    const navUser   = document.getElementById('navUser');
+    const navLogin  = document.getElementById('navLogin');
+    const navLogout = document.getElementById('navLogout');
+    const emailEl   = document.getElementById('email');
+    const pwEl      = document.getElementById('password');
+    const pw2El     = document.getElementById('password2');
+    const btnReg    = document.getElementById('btnRegister');
+    const errorEl   = document.getElementById('error');
+    const infoEl    = document.getElementById('info');
+
+    observeAuth(user => {
+      // ログイン済みなら index へ
+      if (user && user.emailVerified && user.displayName) {
+        location.href = 'index.html';
+      }
+      // ナビバー切替
+      if (user && user.emailVerified) {
+        navUser.textContent    = user.displayName + ' さん';
+        navLogin.style.display  = 'none';
+        navLogout.style.display = '';
+      } else {
+        navUser.textContent    = '';
+        navLogin.style.display  = '';
+        navLogout.style.display = 'none';
+      }
+    });
+
+    navLogout.addEventListener('click', () => logout());
 
     btnReg.addEventListener('click', async () => {
-      errorEl.textContent = '';
       errorEl.style.display = 'none';
-      infoEl.textContent  = '';
+      infoEl.textContent    = '';
       try {
         if (pwEl.value !== pw2El.value) {
           throw new Error('パスワードが一致しません');
