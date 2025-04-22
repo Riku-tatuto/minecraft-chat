@@ -1,3 +1,5 @@
+/* styles.css */
+
 /* 共通 */
 body {
   margin: 0;
@@ -10,33 +12,60 @@ h1, h2 {
   text-align: center;
 }
 
-/* ログイン・新規登録画面用 */
+/* ナビゲーションバー */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #4C97FE;    /* ←変更 */
+  color: white;
+  padding: 10px 20px;
+}
+
+.navbar-title {
+  font-size: 1.2em;
+}
+
+.navbar-menu .nav-link {
+  margin-left: 1rem;
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 5px 10px;      /* ホバー時の背景が見えるように余白を追加 */
+  border-radius: 4px;
+}
+
+/* ホバーまたはアクティブ時に色を変える */
+.navbar-menu .nav-link:hover,
+.navbar-menu .nav-link.active {
+  background: #4180D8;    /* ←追加 */
+}
+
+/* コンテナ（ログイン・登録・ユーザー名設定） */
 .container {
   width: 400px;
   max-width: 90%;
-  margin: auto;
+  margin: 80px auto 0;
   padding: 30px;
   background: white;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
+/* ... 以下は既存のスタイルをそのまま ... */
 .input-group {
   margin-bottom: 15px;
 }
-
 label {
   display: block;
   margin-bottom: 5px;
 }
-
 input {
   width: 100%;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-
 .login-btn {
   width: 100%;
   padding: 10px;
@@ -47,11 +76,9 @@ input {
   font-size: 16px;
   cursor: pointer;
 }
-
 .login-btn:hover {
   background: #0056b3;
 }
-
 .error-banner {
   background: #f8d7da;
   color: #721c24;
@@ -62,60 +89,21 @@ input {
   display: none;
 }
 
-/* ホーム画面用 */
+/* メインページ用 */
 .sidebar {
   position: fixed;
-  top: 0;
+  top: 50px;
   left: 0;
   width: 200px;
-  height: 100vh;
+  height: calc(100vh - 50px);
   background: #007BFF;
   display: flex;
   flex-direction: column;
   color: white;
 }
-
-.sidebar-title {
-  text-align: center;
-  font-size: 20px;
-  padding: 20px 0 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.2);
-}
-
-.menu {
-  flex-grow: 1;
-}
-
-.menu-item {
-  padding: 20px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.menu-item:hover,
-.menu-item.active {
-  background: #0056b3;
-}
-
-.logout-wrapper {
-  margin-top: auto;
-  padding: 20px;
-}
-
-#logout {
-  width: 100%;
-  padding: 10px;
-  border: none;
-  background: #dc3545;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
 .content {
   margin-left: 200px;
-  padding: 20px;
+  padding: 70px 20px 20px;
 }
 
 table {
