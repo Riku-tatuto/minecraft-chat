@@ -2,11 +2,21 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>ユーザー名を設定 | Minecraft チャット</title>
+  <title>ユーザー名を設定 | Minecraft 雑談掲示板</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- ナビバー -->
+  <header class="navbar">
+    <div class="navbar-title">🎮 Minecraft 雑談掲示板</div>
+    <div class="navbar-menu">
+      <span id="navUser"></span>
+      <a href="login.html" id="navLogin" class="nav-link">ログイン</a>
+      <span id="navLogout" class="nav-link" style="display:none;">ログアウト</span>
+    </div>
+  </header>
+
   <div class="container">
     <h2>ユーザー名を設定</h2>
     <div class="input-group">
@@ -18,31 +28,31 @@
   </div>
 
   <script type="module">
-    import { auth, observeAuth, setUsername } from './auth.js';
+    import { auth, observeAuth, logout, setUsername } from './auth.js';
 
+    const navUser    = document.getElementById('navUser');
+    const navLogin   = document.getElementById('navLogin');
+    const navLogout  = document.getElementById('navLogout');
     const usernameEl = document.getElementById('username');
     const btnSet     = document.getElementById('btnSet');
     const errorEl    = document.getElementById('error');
 
-    // ① 認証済みでなかったらログイン画面へ
     observeAuth(user => {
-      if (!user) {
+      // 未ログイン or 未認証なら login へ
+      if (!user || !user.emailVerified) {
         location.href = 'login.html';
-        return;
       }
-      if (!user.emailVerified) {
-        location.href = 'login.html';
-        return;
-      }
-      // すでに displayName があればトップページへ
-      if (user.displayName) {
-        location.href = 'index.html';
+      // ナビバー切替
+      if (user && user.emailVerified) {
+        navUser.textContent    = user.emailVerified ? (user.displayName || '') + ' さん' : '';
+        navLogin.style.display  = 'none';
+        navLogout.style.display = '';
       }
     });
 
-    // ② ボタンクリックで setUsername を呼び出し
+    navLogout.addEventListener('click', () => logout());
+
     btnSet.addEventListener('click', async () => {
-      errorEl.textContent = '';
       errorEl.style.display = 'none';
       const name = usernameEl.value.trim();
       if (!name) {
@@ -52,7 +62,6 @@
       }
       try {
         await setUsername(name);
-        // 成功したらトップに戻る
         location.href = 'index.html';
       } catch (e) {
         errorEl.textContent = e.message;
