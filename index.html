@@ -4,52 +4,50 @@
   <meta charset="UTF-8" />
   <title>Minecraft 雑談掲示板</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- 外部CSSを読み込む -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    <h1>🎮 Minecraft 雑談掲示板</h1>
-    <div>
-      <span id="userInfo"></span>
-      <span id="btnLogout" class="link" style="display:none; margin-left:1rem;">ログアウト</span>
-      <a href="login.html" id="btnLogin" class="link" style="margin-left:1rem;">ログイン</a>
-      <a href="register.html" id="btnRegister" class="link" style="margin-left:0.5rem;">新規登録</a>
+  <!-- ナビバー -->
+  <header class="navbar">
+    <div class="navbar-title">🎮 Minecraft 雑談掲示板</div>
+    <div class="navbar-menu">
+      <span id="navUser"></span>
+      <a href="login.html" id="navLogin" class="nav-link">ログイン</a>
+      <span id="navLogout" class="nav-link" style="display:none;">ログアウト</span>
     </div>
   </header>
 
-  <main style="text-align:center; max-width:400px;">
+  <!-- サイドバー／コンテンツは後で実装 -->
+  <main class="content">
     <p>チャット機能は現在オフラインです。<br>ログイン後に、最新情報やお知らせを見ることができます。</p>
     <div id="content"></div>
   </main>
 
   <script type="module">
-    import { observeAuth, logout } from './auth.js';
+    import { auth, observeAuth, logout } from './auth.js';
 
-    const userInfoEl = document.getElementById('userInfo');
-    const btnLogout  = document.getElementById('btnLogout');
-    const btnLogin   = document.getElementById('btnLogin');
-    const btnRegister= document.getElementById('btnRegister');
+    const navUser   = document.getElementById('navUser');
+    const navLogin  = document.getElementById('navLogin');
+    const navLogout = document.getElementById('navLogout');
+    const contentEl = document.getElementById('content');
 
     observeAuth(user => {
       if (user && user.emailVerified) {
-        userInfoEl.textContent = user.email + ' さん';
-        btnLogout.style.display  = '';
-        btnLogin.style.display   = 'none';
-        btnRegister.style.display= 'none';
-        document.getElementById('content').textContent =
-          'ようこそ！最新のお知らせがあればここに表示されます。';
+        // ユーザー名 さん を表示
+        navUser.textContent   = user.displayName + ' さん';
+        navLogin.style.display  = 'none';
+        navLogout.style.display = '';
+        // コンテンツ
+        contentEl.textContent = 'ようこそ！最新のお知らせがあればここに表示されます。';
       } else {
-        userInfoEl.textContent = '';
-        btnLogout.style.display  = 'none';
-        btnLogin.style.display   = '';
-        btnRegister.style.display= '';
-        document.getElementById('content').textContent =
-          'ログインすると最新情報を確認できます。';
+        navUser.textContent   = '';
+        navLogin.style.display  = '';
+        navLogout.style.display = 'none';
+        contentEl.textContent = 'ログインすると最新情報を確認できます。';
       }
     });
 
-    btnLogout.addEventListener('click', () => {
+    navLogout.addEventListener('click', () => {
       logout();
     });
   </script>
