@@ -9,7 +9,7 @@ import {
   signOut
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
 
-// ── ここに Firebase コンソールからコピーした設定を貼り付け ─────────
+// ── ここに Firebase コンソールで取得した設定を丸ごと貼り付け ──
 const firebaseConfig = {
   apiKey: "AIzaSyA1GqU0-xO_f3Wq6yGOs8nf9ZVFLG-Z4dU",
   authDomain: "minecraft-chat-board.firebaseapp.com",
@@ -23,7 +23,7 @@ const firebaseConfig = {
 const app  = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
-// ログイン状態の変化を監視（どのページでも import して実行できます）
+// ログイン状態の変化を監視
 export function observeAuth(onUserChanged) {
   onAuthStateChanged(auth, user => {
     onUserChanged(user);
@@ -35,7 +35,7 @@ export async function loginWithEmail(email, password) {
   return await signInWithEmailAndPassword(auth, email, password);
 }
 
-// 新規登録（登録後、自動で認証メールを送信）
+// 新規登録（登録後に認証メール送信）
 export async function registerWithEmail(email, password) {
   const userCred = await createUserWithEmailAndPassword(auth, email, password);
   await sendEmailVerification(userCred.user);
