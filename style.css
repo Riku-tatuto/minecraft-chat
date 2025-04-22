@@ -10,7 +10,7 @@ h1, h2 {
   text-align: center;
 }
 
-/* ログイン画面用 */
+/* ログイン・新規登録画面用 */
 .container {
   width: 400px;
   max-width: 90%;
