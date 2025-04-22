@@ -2,12 +2,21 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>ログイン | Minecraft チャット</title>
+  <title>ログイン | Minecraft 雑談掲示板</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- 外部CSSを読み込む -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- ナビバー -->
+  <header class="navbar">
+    <div class="navbar-title">🎮 Minecraft 雑談掲示板</div>
+    <div class="navbar-menu">
+      <span id="navUser"></span>
+      <a href="login.html" id="navLogin" class="nav-link">ログイン</a>
+      <span id="navLogout" class="nav-link" style="display:none;">ログアウト</span>
+    </div>
+  </header>
+
   <div class="container">
     <h2>ログイン</h2>
     <div class="input-group">
@@ -19,42 +28,80 @@
       <input id="password" type="password" placeholder="パスワード" />
     </div>
     <button id="btnLogin" class="login-btn">ログイン</button>
+    <button id="btnResend" class="login-btn" style="background:#28a745; display:none; margin-top:1rem;">
+      認証メール再送信
+    </button>
+    <div id="error" class="error-banner"></div>
     <div class="link" style="text-align:center; margin-top:0.5rem; font-size:0.9rem;">
       <a href="register.html">新規登録はこちら</a>
     </div>
-    <div id="error" class="error-banner"></div>
   </div>
 
   <script type="module">
-    import { auth, loginWithEmail, observeAuth } from './auth.js';
+    import {
+      auth,
+      loginWithEmail,
+      observeAuth,
+      logout,
+      resendVerificationEmail
+    } from './auth.js';
 
+    const navUser    = document.getElementById('navUser');
+    const navLogin   = document.getElementById('navLogin');
+    const navLogout  = document.getElementById('navLogout');
     const emailEl    = document.getElementById('email');
     const passEl     = document.getElementById('password');
     const btnLogin   = document.getElementById('btnLogin');
+    const btnResend  = document.getElementById('btnResend');
     const errorEl    = document.getElementById('error');
 
-    // すでにログイン済みならトップページへ
+    // 認証状態監視（ナビバー表示／ページ遷移）
     observeAuth(user => {
       if (user && user.emailVerified) {
-        // まだ表示名を設定していなければ setup.html へ
+        // まだ displayName がなければ setup へ
         if (!user.displayName) {
           location.href = 'setup.html';
         } else {
           location.href = 'index.html';
         }
       }
+      // ナビバーのログイン／ログアウト切替
+      if (user && user.emailVerified) {
+        navUser.textContent    = user.displayName + ' さん';
+        navLogin.style.display  = 'none';
+        navLogout.style.display = '';
+      } else {
+        navUser.textContent    = '';
+        navLogin.style.display  = '';
+        navLogout.style.display = 'none';
+      }
     });
 
+    navLogout.addEventListener('click', () => logout());
+
     btnLogin.addEventListener('click', async () => {
-      errorEl.textContent = '';
       errorEl.style.display = 'none';
+      btnResend.style.display = 'none';
       try {
-        const email = emailEl.value;
-        const pw    = passEl.value;
-        await loginWithEmail(email, pw);
+        await loginWithEmail(emailEl.value, passEl.value);
+        // メール未認証ならエラー表示＋再送ボタン
         if (!auth.currentUser.emailVerified) {
           throw new Error('認証メールを確認してください。');
         }
+      } catch (e) {
+        errorEl.textContent = e.message;
+        errorEl.style.display = 'block';
+        if (e.message.includes('認証メールを確認してください')) {
+          btnResend.style.display = 'block';
+        }
+      }
+    });
+
+    btnResend.addEventListener('click', async () => {
+      try {
+        await resendVerificationEmail();
+        btnResend.textContent = '再送信しました！';
+        btnResend.disabled = true;
       } catch (e) {
         errorEl.textContent = e.message;
         errorEl.style.display = 'block';
