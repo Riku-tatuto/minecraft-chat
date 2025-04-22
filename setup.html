@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>ユーザー名を設定 | Minecraft チャット</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h2>ユーザー名を設定</h2>
+    <div class="input-group">
+      <label for="username">表示名</label>
+      <input id="username" type="text" placeholder="例）まいくら王" />
+    </div>
+    <button id="btnSet" class="login-btn">設定する</button>
+    <div id="error" class="error-banner"></div>
+  </div>
+
+  <script type="module">
+    import { auth, observeAuth, setUsername } from './auth.js';
+
+    const usernameEl = document.getElementById('username');
+    const btnSet     = document.getElementById('btnSet');
+    const errorEl    = document.getElementById('error');
+
+    // ① 認証済みでなかったらログイン画面へ
+    observeAuth(user => {
+      if (!user) {
+        location.href = 'login.html';
+        return;
+      }
+      if (!user.emailVerified) {
+        location.href = 'login.html';
+        return;
+      }
+      // すでに displayName があればトップページへ
+      if (user.displayName) {
+        location.href = 'index.html';
+      }
+    });
+
+    // ② ボタンクリックで setUsername を呼び出し
+    btnSet.addEventListener('click', async () => {
+      errorEl.textContent = '';
+      errorEl.style.display = 'none';
+      const name = usernameEl.value.trim();
+      if (!name) {
+        errorEl.textContent = '表示名を入力してください。';
+        errorEl.style.display = 'block';
+        return;
+      }
+      try {
+        await setUsername(name);
+        // 成功したらトップに戻る
+        location.href = 'index.html';
+      } catch (e) {
+        errorEl.textContent = e.message;
+        errorEl.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
