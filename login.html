@@ -29,11 +29,6 @@
     </div>
     <button id="btnLogin" class="login-btn">ログイン</button>
 
-    <!-- 認証メール再送信ボタン -->
-    <button id="btnResend" class="login-btn" style="background:#28a745; display:none; margin-top:1rem;">
-      認証メール再送信
-    </button>
-
     <div id="error" class="error-banner"></div>
 
     <div class="link" style="text-align:center; margin-top:0.5rem; font-size:0.9rem;">
@@ -42,34 +37,26 @@
   </div>
 
   <script type="module">
-    import {
-      auth,
-      loginWithEmail,
-      observeAuth,
-      logout,
-      resendVerificationEmail
-    } from './auth.js';
+    import { auth, loginWithEmail, observeAuth, logout } from './auth.js';
 
-    const navUser    = document.getElementById('navUser');
-    const navLogin   = document.getElementById('navLogin');
-    const navLogout  = document.getElementById('navLogout');
-    const emailEl    = document.getElementById('email');
-    const passEl     = document.getElementById('password');
-    const btnLogin   = document.getElementById('btnLogin');
-    const btnResend  = document.getElementById('btnResend');
-    const errorEl    = document.getElementById('error');
+    const navUser   = document.getElementById('navUser');
+    const navLogin  = document.getElementById('navLogin');
+    const navLogout = document.getElementById('navLogout');
+    const emailEl   = document.getElementById('email');
+    const passEl    = document.getElementById('password');
+    const btnLogin  = document.getElementById('btnLogin');
+    const errorEl   = document.getElementById('error');
 
     // 認証状態監視（ナビバー表示／ページ遷移）
     observeAuth(user => {
       if (user && user.emailVerified) {
-        // まだ displayName がなければ setup へ
+        // displayName がなければ設定ページへ、あればトップへ
         if (!user.displayName) {
           location.href = 'setup.html';
         } else {
           location.href = 'index.html';
         }
       }
-      // ナビバーのログイン／ログアウト切替
       if (user && user.emailVerified) {
         navUser.textContent    = user.displayName + ' さん';
         navLogin.style.display  = 'none';
@@ -84,28 +71,12 @@
     navLogout.addEventListener('click', () => logout());
 
     btnLogin.addEventListener('click', async () => {
-      errorEl.style.display   = 'none';
-      btnResend.style.display = 'none';
+      errorEl.style.display = 'none';
       try {
         await loginWithEmail(emailEl.value, passEl.value);
-        // メール未認証ならエラー表示＋再送ボタン
         if (!auth.currentUser.emailVerified) {
           throw new Error('認証メールを確認してください。');
         }
-      } catch (e) {
-        errorEl.textContent = e.message;
-        errorEl.style.display = 'block';
-        if (e.message.includes('認証メールを確認してください')) {
-          btnResend.style.display = 'block';
-        }
-      }
-    });
-
-    btnResend.addEventListener('click', async () => {
-      try {
-        await resendVerificationEmail();
-        btnResend.textContent = '再送信しました！';
-        btnResend.disabled    = true;
       } catch (e) {
         errorEl.textContent   = e.message;
         errorEl.style.display = 'block';
