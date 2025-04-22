@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>新規登録 | Minecraft チャット</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { display: flex; justify-content: center; align-items: center; height: 100vh; margin:0; font-family: sans-serif; }
+    .card { padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius:8px; width:300px; }
+    input, button { width:100%; padding:0.5rem; margin-top:1rem; }
+    .link { text-align:center; margin-top:0.5rem; font-size:0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>新規登録</h2>
+    <input id="email"       type="email"    placeholder="メールアドレス" />
+    <input id="password"    type="password" placeholder="パスワード（6文字以上）" />
+    <input id="password2"   type="password" placeholder="パスワード再入力" />
+    <button id="btnRegister">登録＆認証メール送信</button>
+    <div class="link">
+      <a href="login.html">ログインはこちら</a>
+    </div>
+    <div id="error" style="color:red; margin-top:0.5rem;"></div>
+    <div id="info"  style="color:green; margin-top:0.5rem;"></div>
+  </div>
+
+  <script type="module">
+    import { registerWithEmail } from './auth.js';
+
+    const emailEl  = document.getElementById('email');
+    const pwEl     = document.getElementById('password');
+    const pw2El    = document.getElementById('password2');
+    const btnReg   = document.getElementById('btnRegister');
+    const errorEl  = document.getElementById('error');
+    const infoEl   = document.getElementById('info');
+
+    btnReg.addEventListener('click', async () => {
+      errorEl.textContent = '';
+      infoEl.textContent  = '';
+      try {
+        if (pwEl.value !== pw2El.value) {
+          throw new Error('パスワードが一致しません');
+        }
+        await registerWithEmail(emailEl.value, pwEl.value);
+        infoEl.textContent = '登録成功！認証メールを送信しました。受信BOXを確認してください。';
+      } catch (e) {
+        errorEl.textContent = e.message;
+      }
+    });
+  </script>
+</body>
+</html>
