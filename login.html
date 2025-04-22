@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>ログイン | Minecraft チャット</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- 追加: 共通スタイルを読み込む -->
+  <!-- 外部CSSを読み込む -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -19,7 +19,7 @@
       <input id="password" type="password" placeholder="パスワード" />
     </div>
     <button id="btnLogin" class="login-btn">ログイン</button>
-    <div class="link">
+    <div class="link" style="text-align:center; margin-top:0.5rem; font-size:0.9rem;">
       <a href="register.html">新規登録はこちら</a>
     </div>
     <div id="error" class="error-banner"></div>
@@ -33,6 +33,7 @@
     const btnLogin   = document.getElementById('btnLogin');
     const errorEl    = document.getElementById('error');
 
+    // すでにログイン済みならトップページへ
     observeAuth(user => {
       if (user && user.emailVerified) {
         location.href = 'index.html';
@@ -40,16 +41,18 @@
     });
 
     btnLogin.addEventListener('click', async () => {
-      errorEl.style.display = 'none';
       errorEl.textContent = '';
+      errorEl.style.display = 'none';
       try {
-        await loginWithEmail(emailEl.value, passEl.value);
+        const email = emailEl.value;
+        const pw    = passEl.value;
+        await loginWithEmail(email, pw);
         if (!auth.currentUser.emailVerified) {
           throw new Error('認証メールを確認してください。');
         }
       } catch (e) {
         errorEl.textContent = e.message;
-        errorEl.style.display = '';
+        errorEl.style.display = 'block';
       }
     });
   </script>
