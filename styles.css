@@ -198,3 +198,24 @@ td div.detail {
   border-radius: 4px;
   cursor: pointer;
 }
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #007BFF;
+  color: white;
+  padding: 10px 20px;
+}
+.navbar-title {
+  font-size: 1.2em;
+}
+.navbar-menu .nav-link {
+  margin-left: 1rem;
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+}
+.navbar-menu .nav-link:hover {
+  text-decoration: underline;
+}
