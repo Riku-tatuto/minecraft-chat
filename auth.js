@@ -7,7 +7,7 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   signOut,
-  updateProfile
+  updateProfile    // ← 追加
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
 
 // ── ここに Firebase コンソールで取得した設定を丸ごと貼り付け ──
@@ -43,12 +43,20 @@ export async function registerWithEmail(email, password) {
   return userCred;
 }
 
+// メール認証の再送信
+export async function resendVerificationEmail() {
+  if (!auth.currentUser) {
+    throw new Error('ログイン状態が正しくありません。');
+  }
+  await sendEmailVerification(auth.currentUser);
+}
+
 // ログアウト
 export async function logout() {
   await signOut(auth);
 }
 
-// ユーザー名（displayName）を Firebase Authentication に設定
+// ユーザー名（displayName）を Firebase に設定
 export async function setUsername(displayName) {
   if (!auth.currentUser) {
     throw new Error('ログイン状態が正しくありません。');
