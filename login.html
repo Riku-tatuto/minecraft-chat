@@ -35,8 +35,13 @@
 
     // すでにログイン済みならトップページへ
     observeAuth(user => {
-      if (user && user.emailVerified) {
-        location.href = 'index.html';
+      iif (user && user.emailVerified) {
+        // まだ表示名を設定していなければ setup.html へ
+        if (!user.displayName) {
+          location.href = 'setup.html';
+        } else {
+          location.href = 'index.html';
+        }
       }
     });
 
