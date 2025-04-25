@@ -1,13 +1,13 @@
 // auth.js
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
 import {
-  getAuth,
+  getAuth,                // ← 追加
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendEmailVerification,
   signOut,
-  updateProfile    // ← 追加
+  updateProfile
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
 
 // ── ここに Firebase コンソールで取得した設定を丸ごと貼り付け ──
