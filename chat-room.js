@@ -1,33 +1,32 @@
 // chat-room.js
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
 import {
-  getDatabase,    // Realtime Database 用
+  getDatabase,
   ref,
   push,
   onValue
-} from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';  // :contentReference[oaicite:0]{index=0}
+} from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 import { auth, observeAuth, logout } from './auth.js';
 
 // ── Firebase 初期化 ────────────────────────────────────────
-// Firebase コンソールからコピーした設定に databaseURL を追加
 const firebaseConfig = {
   apiKey: "AIzaSyA1GqU0-xO_f3Wq6yGOs8nf9ZVFLG-Z4dU",
   authDomain: "minecraft-chat-board.firebaseapp.com",
-  databaseURL: "https://minecraft-chat-board-default-rtdb.firebaseio.com",  // ← 追加 :contentReference[oaicite:1]{index=1}
+  databaseURL: "https://minecraft-chat-board-default-rtdb.firebaseio.com",
   projectId: "minecraft-chat-board",
   storageBucket: "minecraft-chat-board.firebasestorage.app",
   messagingSenderId: "394340520586",
   appId: "1:394340520586:web:d822713f8d7357104b9373"
 };
 const app = initializeApp(firebaseConfig);
-const db  = getDatabase(app);    // Realtime Database インスタンス取得 :contentReference[oaicite:2]{index=2}
+const db  = getDatabase(app);
 // ────────────────────────────────────────────────────────
 
-// ルームID を URL 末尾から取得（例 "heya1"）
-const parts  = location.pathname.split('/');
+// URL末尾からルームID取得（例: "heya1"）
+const parts  = location.pathname.replace(/\/$/, '').split('/');
 const roomId = parts[parts.length - 1];
 
-// チャット UI を動的に挿入
+// チャットUIを挿入
 document.body.insertAdjacentHTML('beforeend', `
   <div id="chat-container">
     <div id="messages" class="chat-messages"></div>
@@ -42,15 +41,20 @@ const messagesEl = document.getElementById('messages');
 const inputEl    = document.getElementById('msgInput');
 const btnSend    = document.getElementById('btnSend');
 
-// 認証済みユーザーのみ送信可能
+// 認証状態に応じて「送信可能／不可」を切り替え
 observeAuth(user => {
   if (user && user.emailVerified) {
-    inputEl.disabled = false;
-    btnSend.disabled = false;
+    inputEl.disabled    = false;
+    btnSend.disabled    = false;
+    inputEl.placeholder = 'メッセージを入力...';
+  } else {
+    inputEl.disabled    = true;
+    btnSend.disabled    = true;
+    inputEl.placeholder = 'ログインするとメッセージを送信できます';
   }
 });
 
-// メッセージ送信：push() で JSON を追加
+// メッセージ送信
 btnSend.addEventListener('click', () => {
   const text = inputEl.value.trim();
   if (!text) return;
@@ -64,16 +68,29 @@ btnSend.addEventListener('click', () => {
   });
 });
 
-// リアルタイム受信：onValue() で値の変化をリッスン :contentReference[oaicite:3]{index=3}
+// リアルタイム受信＆レンダリング
 const messagesRef = ref(db, `rooms/${roomId}/messages`);
 onValue(messagesRef, snapshot => {
   const data = snapshot.val() || {};
+  // 1) 受信したメッセージを時刻順に並べ替え
+  const msgs = Object.values(data)
+    .sort((a, b) => a.timestamp - b.timestamp);
+
   messagesEl.innerHTML = '';
-  Object.values(data).forEach(msg => {
+  msgs.forEach(msg => {
+    const time = new Date(msg.timestamp);
+    const hh = String(time.getHours()).padStart(2, '0');
+    const mm = String(time.getMinutes()).padStart(2, '0');
+
     const el = document.createElement('div');
     el.classList.add('chat-message');
-    el.innerHTML = `<strong>${msg.user}</strong>: ${msg.text}`;
+    el.innerHTML = `
+      <span class="timestamp">[${hh}:${mm}]</span>
+      <span class="username">${msg.user}</span>:
+      <span class="message-text">${msg.text}</span>
+    `;
     messagesEl.appendChild(el);
   });
+  // 常に最新メッセージまでスクロール
   messagesEl.scrollTop = messagesEl.scrollHeight;
 });
