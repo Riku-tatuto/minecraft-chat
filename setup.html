@@ -1,76 +1,49 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <title>ユーザー名を設定 | Minecraft 雑談掲示板</title>
-  <link rel="icon" href="minecraft-chat-board-logo.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <!-- ナビバー -->
-  <header class="navbar">
-    <a href="index.html" class="navbar-brand">
-      <img src="minecraft-chat-board.png" alt="Minecraft 雑談掲示板" style="height: 40px;">
-    </a>
-    <div class="navbar-menu">
-      <span id="navUser"></span>
-      <a href="login.html" id="navLogin" class="nav-link">ログイン</a>
-      <span id="navLogout" class="nav-link" style="display:none;">ログアウト</span>
-    </div>
-  </header>
+---
+layout: default
+title: ユーザー名を設定 | Minecraft 雑談掲示板
+permalink: /setup.html
+---
 
-  <div class="container">
-    <h2>ユーザー名を設定</h2>
-    <div class="input-group">
-      <label for="username">表示名</label>
-      <input id="username" type="text" placeholder="例）まいくら王" />
-    </div>
-    <button id="btnSet" class="login-btn">設定する</button>
-    <div id="error" class="error-banner"></div>
+<div class="container">
+  <h2>ユーザー名を設定</h2>
+  <div class="input-group">
+    <label for="username">表示名</label>
+    <input id="username" type="text" placeholder="例）まいくら王" />
   </div>
+  <button id="btnSet" class="login-btn">設定する</button>
+  <div id="error" class="error-banner"></div>
+</div>
 
-  <script type="module">
-    import { auth, observeAuth, logout, setUsername } from './auth.js';
+<script type="module">
+  import { auth, observeAuth, logout, setUsername } from './auth.js';
+  const navUser = document.getElementById('navUser'),
+        navLogin= document.getElementById('navLogin'),
+        navLogout= document.getElementById('navLogout'),
+        usernameEl = document.getElementById('username'),
+        btnSet   = document.getElementById('btnSet'),
+        errorEl  = document.getElementById('error');
 
-    const navUser    = document.getElementById('navUser');
-    const navLogin   = document.getElementById('navLogin');
-    const navLogout  = document.getElementById('navLogout');
-    const usernameEl = document.getElementById('username');
-    const btnSet     = document.getElementById('btnSet');
-    const errorEl    = document.getElementById('error');
+  observeAuth(user => {
+    if (!user || !user.emailVerified) location.href = 'login.html';
+    navUser.textContent    = user.displayName ? user.displayName + ' さん' : '';
+    navLogin.style.display = 'none';
+    navLogout.style.display= '';
+  });
+  navLogout.addEventListener('click', () => logout());
 
-    observeAuth(user => {
-      // 未ログイン or 未認証なら login へ
-      if (!user || !user.emailVerified) {
-        location.href = 'login.html';
-      }
-      // ナビバー切替
-      if (user && user.emailVerified) {
-        navUser.textContent    = user.emailVerified ? (user.displayName || '') + ' さん' : '';
-        navLogin.style.display  = 'none';
-        navLogout.style.display = '';
-      }
-    });
-
-    navLogout.addEventListener('click', () => logout());
-
-    btnSet.addEventListener('click', async () => {
-      errorEl.style.display = 'none';
-      const name = usernameEl.value.trim();
-      if (!name) {
-        errorEl.textContent = '表示名を入力してください。';
-        errorEl.style.display = 'block';
-        return;
-      }
-      try {
-        await setUsername(name);
-        location.href = 'index.html';
-      } catch (e) {
-        errorEl.textContent = e.message;
-        errorEl.style.display = 'block';
-      }
-    });
-  </script>
-</body>
-</html>
+  btnSet.addEventListener('click', async () => {
+    errorEl.style.display = 'none';
+    const name = usernameEl.value.trim();
+    if (!name) {
+      errorEl.textContent = '表示名を入力してください。';
+      errorEl.style.display = 'block';
+      return;
+    }
+    try {
+      await setUsername(name);
+      location.href = 'index.html';
+    } catch (e) {
+      errorEl.textContent = e.message; errorEl.style.display = 'block';
+    }
+  });
+</script>
