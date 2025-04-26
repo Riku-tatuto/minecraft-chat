@@ -230,6 +230,6 @@ td div.detail {
 
 /* ナビバーのロゴを小さくする */
 .navbar-logo {
-  height: 30px;   /* ここをお好みの高さに変更 */
+  height: 60px;   /* ここをお好みの高さに変更 */
   width: auto;    /* アスペクト比を保つ */
 }
