@@ -1,12 +1,11 @@
 // chat-room.js
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
 import {
   getDatabase,
   ref,
   push,
   onValue
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
-import { auth, observeAuth, logout } from './auth.js';
+import { auth, observeAuth, logout, app } from './auth.js';  // ← app をインポート
 
 // ── Firebase 初期化 ────────────────────────────────────────
 const firebaseConfig = {
