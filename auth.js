@@ -1,7 +1,7 @@
 // auth.js
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
 import {
-  getAuth,                // ← 追加
+  getAuth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -21,7 +21,7 @@ const firebaseConfig = {
 };
 // ────────────────────────────────────────────────────────────────
 
-export const app = initializeApp(firebaseConfig);  // ← export を追加
+export const app  = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
 // ログイン状態の変化を監視
