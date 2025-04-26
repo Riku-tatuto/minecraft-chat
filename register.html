@@ -1,119 +1,70 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <title>新規登録 | Minecraft 雑談掲示板</title>
-  <link rel="icon" href="minecraft-chat-board-logo.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <!-- ナビバー -->
-  <header class="navbar">
-    <a href="index.html" class="navbar-brand">
-      <img src="minecraft-chat-board.png" alt="Minecraft 雑談掲示板" style="height: 40px;">
-    </a>
-    <div class="navbar-menu">
-      <span id="navUser"></span>
-      <a href="login.html" id="navLogin" class="nav-link">ログイン</a>
-      <span id="navLogout" class="nav-link" style="display:none;">ログアウト</span>
-    </div>
-  </header>
+---
+layout: default
+title: 新規登録 | Minecraft 雑談掲示板
+permalink: /register.html
+---
 
-  <div class="container">
-    <h2>新規登録</h2>
-    <div class="input-group">
-      <label for="email">メールアドレス</label>
-      <input id="email" type="email" placeholder="メールアドレス" />
-    </div>
-    <div class="input-group">
-      <label for="password">パスワード（6文字以上）</label>
-      <input id="password" type="password" placeholder="パスワード" />
-    </div>
-    <div class="input-group">
-      <label for="password2">パスワード再入力</label>
-      <input id="password2" type="password" placeholder="パスワード再入力" />
-    </div>
-    <button id="btnRegister" class="login-btn">登録＆認証メール送信</button>
-
-    <!-- 認証メール再送信ボタン -->
-    <button id="btnResend" class="login-btn" style="background:#28a745; display:none; margin-top:1rem;">
-      認証メール再送信
-    </button>
-
-    <div id="error" class="error-banner"></div>
-    <div id="info" style="color:green; margin-top:0.5rem;"></div>
-
-    <div class="link" style="text-align:center; margin-top:0.5rem; font-size:0.9rem;">
-      <a href="login.html">ログインはこちら</a>
-    </div>
+<div class="container">
+  <h2>新規登録</h2>
+  <div class="input-group">
+    <label for="email">メールアドレス</label>
+    <input id="email" type="email" placeholder="メールアドレス" />
   </div>
+  <div class="input-group">
+    <label for="password">パスワード（6文字以上）</label>
+    <input id="password" type="password" placeholder="パスワード" />
+  </div>
+  <div class="input-group">
+    <label for="password2">パスワード再入力</label>
+    <input id="password2" type="password" placeholder="パスワード再入力" />
+  </div>
+  <button id="btnRegister" class="login-btn">登録＆認証メール送信</button>
+  <button id="btnResend" class="login-btn" style="background:#28a745; display:none; margin-top:1rem;">
+    認証メール再送信
+  </button>
+  <div id="error" class="error-banner"></div>
+  <div id="info" style="color:green; margin-top:0.5rem;"></div>
+  <div class="link"><a href="login.html">ログインはこちら</a></div>
+</div>
 
-  <script type="module">
-    import {
-      registerWithEmail,
-      observeAuth,
-      logout,
-      resendVerificationEmail
-    } from './auth.js';
+<script type="module">
+  import { registerWithEmail, observeAuth, logout, resendVerificationEmail } from './auth.js';
+  const navUser = document.getElementById('navUser'),
+        navLogin= document.getElementById('navLogin'),
+        navLogout= document.getElementById('navLogout'),
+        emailEl = document.getElementById('email'),
+        pwEl    = document.getElementById('password'),
+        pw2El   = document.getElementById('password2'),
+        btnReg  = document.getElementById('btnRegister'),
+        btnResend= document.getElementById('btnResend'),
+        errorEl = document.getElementById('error'),
+        infoEl  = document.getElementById('info');
 
-    const navUser   = document.getElementById('navUser');
-    const navLogin  = document.getElementById('navLogin');
-    const navLogout = document.getElementById('navLogout');
-    const emailEl   = document.getElementById('email');
-    const pwEl      = document.getElementById('password');
-    const pw2El     = document.getElementById('password2');
-    const btnReg    = document.getElementById('btnRegister');
-    const btnResend = document.getElementById('btnResend');
-    const errorEl   = document.getElementById('error');
-    const infoEl    = document.getElementById('info');
+  observeAuth(user => {
+    if (user && user.emailVerified && user.displayName) location.href = 'index.html';
+    navUser.textContent    = user?.displayName ? user.displayName + ' さん' : '';
+    navLogin.style.display = user?.emailVerified ? 'none' : '';
+    navLogout.style.display= user?.emailVerified ? '' : 'none';
+  });
+  navLogout.addEventListener('click', () => logout());
 
-    observeAuth(user => {
-      // ログイン済みなら index へ
-      if (user && user.emailVerified && user.displayName) {
-        location.href = 'index.html';
-      }
-      // ナビバー切替
-      if (user && user.emailVerified) {
-        navUser.textContent    = user.displayName + ' さん';
-        navLogin.style.display  = 'none';
-        navLogout.style.display = '';
-      } else {
-        navUser.textContent    = '';
-        navLogin.style.display  = '';
-        navLogout.style.display = 'none';
-      }
-    });
-
-    navLogout.addEventListener('click', () => logout());
-
-    btnReg.addEventListener('click', async () => {
-      errorEl.style.display   = 'none';
-      infoEl.textContent      = '';
-      btnResend.style.display = 'none';
-      try {
-        if (pwEl.value !== pw2El.value) {
-          throw new Error('パスワードが一致しません');
-        }
-        await registerWithEmail(emailEl.value, pwEl.value);
-        infoEl.textContent      = '登録成功！認証メールを送信しました。受信BOXを確認してください。';
-        btnResend.style.display = '';  // 成功後に再送ボタン表示
-      } catch (e) {
-        errorEl.textContent     = e.message;
-        errorEl.style.display   = 'block';
-      }
-    });
-
-    btnResend.addEventListener('click', async () => {
-      try {
-        await resendVerificationEmail();
-        btnResend.textContent = '再送信しました！';
-        btnResend.disabled    = true;
-      } catch (e) {
-        errorEl.textContent   = e.message;
-        errorEl.style.display = 'block';
-      }
-    });
-  </script>
-</body>
-</html>
+  btnReg.addEventListener('click', async () => {
+    errorEl.style.display = 'none'; infoEl.textContent = ''; btnResend.style.display = 'none';
+    try {
+      if (pwEl.value !== pw2El.value) throw new Error('パスワードが一致しません');
+      await registerWithEmail(emailEl.value, pwEl.value);
+      infoEl.textContent = '登録成功！認証メールを送信しました。受信BOXを確認してください。';
+      btnResend.style.display = '';
+    } catch (e) {
+      errorEl.textContent = e.message; errorEl.style.display = 'block';
+    }
+  });
+  btnResend.addEventListener('click', async () => {
+    try {
+      await resendVerificationEmail();
+      btnResend.textContent = '再送信しました！'; btnResend.disabled = true;
+    } catch (e) {
+      errorEl.textContent = e.message; errorEl.style.display = 'block';
+    }
+  });
+</script>
