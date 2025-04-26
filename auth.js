@@ -21,7 +21,7 @@ const firebaseConfig = {
 };
 // ────────────────────────────────────────────────────────────────
 
-const app  = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);  // ← export を追加
 export const auth = getAuth(app);
 
 // ログイン状態の変化を監視
