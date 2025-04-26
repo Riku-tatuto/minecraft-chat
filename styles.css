@@ -227,3 +227,9 @@ td div.detail {
 .thread-btn:hover {
   background-color: #f0f0f0;   /* ホバー時に淡いグレー */
 }
+
+/* ナビバーのロゴを小さくする */
+.navbar-logo {
+  height: 30px;   /* ここをお好みの高さに変更 */
+  width: auto;    /* アスペクト比を保つ */
+}
