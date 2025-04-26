@@ -1,11 +1,10 @@
-<!-- _includes/navbar.html -->
 <header class="navbar">
-  <a href="index.html" class="navbar-brand">
-    <img src="minecraft-chat-board.png" alt="Minecraft 雑談掲示板" class="navbar-logo">
+  <a href="{{ '/index.html' | relative_url }}" class="navbar-brand">
+    <img src="{{ '/minecraft-chat-board.png' | relative_url }}" alt="Minecraft 雑談掲示板" class="navbar-logo">
   </a>
   <nav class="navbar-menu">
     <span id="navUser"></span>
-    <a href="login.html" id="navLogin" class="nav-link">ログイン</a>
+    <a href="{{ '/login.html' | relative_url }}" id="navLogin" class="nav-link">ログイン</a>
     <span id="navLogout" class="nav-link" style="display:none;">ログアウト</span>
   </nav>
 </header>
