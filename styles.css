@@ -233,3 +233,51 @@ td div.detail {
   height: 60px;   /* ここをお好みの高さに変更 */
   width: auto;    /* アスペクト比を保つ */
 }
+
+/* ── チャット画面 ── */
+#chat-container {
+  max-width: 500px;
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  height: 300px;
+  background: #f9f9f9;
+}
+
+.chat-message {
+  margin-bottom: 0.5rem;
+}
+
+.chat-input-area {
+  display: flex;
+  border-top: 1px solid #ddd;
+}
+
+.chat-input-area input {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  outline: none;
+}
+
+.chat-input-area button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: #4C97FE;
+  color: #fff;
+  cursor: pointer;
+}
+.chat-input-area button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
