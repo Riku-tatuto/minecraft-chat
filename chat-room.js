@@ -41,6 +41,13 @@ observeAuth(user => {
   }
 });
 
+// Enter キーで送信
+inputEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !btnSend.disabled) {
+    btnSend.click();
+  }
+});
+
 // メッセージ送信：push() で JSON を追加
 btnSend.addEventListener('click', () => {
   const text = inputEl.value.trim();
