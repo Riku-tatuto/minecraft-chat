@@ -1,17 +1,41 @@
-<!-- _layouts/default.html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <title>{{ page.title }}</title>
-  <link rel="icon" href="/minecraft-chat-board/minecraft-chat-board-logo.png" />
+  <link rel="icon" href="{{ '/minecraft-chat-board-logo.png' | relative_url }}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="/minecraft-chat-board/styles.css" />
+  <link rel="stylesheet" href="{{ '/styles.css' | relative_url }}" />
 </head>
 <body>
-  {% include navbar.html %}  <!-- ← ナビバーを共通化 :contentReference[oaicite:0]{index=0} -->
+  {% include navbar.html %}
   <main class="content">
-    {{ content }}            <!-- 各ページ固有部分 -->
+    {{ content }}
   </main>
+
+  <!-- 認証状態に応じてナビバーを更新 -->
+  <script type="module">
+    import { observeAuth, logout } from '{{ "/auth.js" | relative_url }}';
+
+    const navUser   = document.getElementById('navUser');
+    const navLogin  = document.getElementById('navLogin');
+    const navLogout = document.getElementById('navLogout');
+
+    observeAuth(user => {
+      if (user && user.emailVerified) {
+        navUser.textContent    = user.displayName + ' さん';
+        navLogin.style.display  = 'none';
+        navLogout.style.display = '';
+      } else {
+        navUser.textContent    = '';
+        navLogin.style.display  = '';
+        navLogout.style.display = 'none';
+      }
+    });
+
+    navLogout.addEventListener('click', () => {
+      logout();
+    });
+  </script>
 </body>
 </html>
