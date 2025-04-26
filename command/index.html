@@ -4,9 +4,25 @@ title: コマンド関連
 permalink: /command/
 ---
 
-<h1>コマンド関連のスレッド一覧</h1>
-<ul>
-  <li><a href="#">/give コマンドの使い方</a></li>
-  <li><a href="#">/tp でワープする方法</a></li>
-  <!-- … -->
-</ul>
+<p>コマンド関連のスレッドにようこそ！</p>
+
+<section class="thread-section">
+  <h2 class="thread-section-title">スレッド一覧</h2>
+  <div class="thread-list">
+    <!-- 「部屋1」「部屋2」を追加 -->
+    <a href="{{ '/command/heya1/' | relative_url }}" class="thread-btn">
+      部屋1 <span class="count">(0)</span>
+    </a>
+    <a href="{{ '/command/heya2/' | relative_url }}" class="thread-btn">
+      部屋2 <span class="count">(0)</span>
+    </a>
+  </div>
+</section>
+
+<div id="content"></div>
+
+<script type="module">
+  import { auth, observeAuth, logout } from '../auth.js';
+
+  // …observeAuth のコードはそのまま
+</script>
