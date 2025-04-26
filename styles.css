@@ -186,3 +186,42 @@ td div.detail {
   border-radius: 4px;
   cursor: pointer;
 }
+
+/* ── スレッド風ボタンエリア ── */
+.thread-section {
+  margin-top: 2rem;
+}
+
+.thread-section-title {
+  margin-bottom: 0.5rem;
+  font-size: 1.2em;
+  color: #333;
+}
+
+.thread-list {
+  display: flex;
+  flex-direction: column; /* 縦に並べる */
+  gap: 0.5rem;            /* ボタン間の隙間 */
+}
+
+.thread-btn {
+  /* 横長・角丸 */
+  width: 100%;            /* コンテナ幅いっぱい */
+  max-width: 400px;       /* 任意で最大幅を制限 */
+  padding: 0.6em 1em;     /* 上下・左右の余白 */
+  border: none;
+  border-radius: 9999px;  /* 完全なピル型にする */
+  
+  /* 色・フォント */
+  background-color: #2f3136;  /* Discord チャンネル風の暗めグレー */
+  color: #ffffff;
+  font-size: 1em;
+  text-align: left;           /* テキストを左寄せ */
+  cursor: pointer;
+  
+  /* ホバー効果 */
+  transition: background-color 0.2s;
+}
+.thread-btn:hover {
+  background-color: #40444b;  /* ホバー時に少し明るく */
+}
