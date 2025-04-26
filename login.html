@@ -1,90 +1,51 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <title>ログイン | Minecraft 雑談掲示板</title>
-  <link rel="icon" href="minecraft-chat-board-logo.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <!-- ナビバー -->
-  <header class="navbar">
-    <a href="index.html" class="navbar-brand">
-      <img src="minecraft-chat-board.png" alt="Minecraft 雑談掲示板" style="height: 40px;">
-    </a>
-    <div class="navbar-menu">
-      <span id="navUser"></span>
-      <a href="login.html" id="navLogin" class="nav-link">ログイン</a>
-      <span id="navLogout" class="nav-link" style="display:none;">ログアウト</span>
-    </div>
-  </header>
+---
+layout: default
+title: ログイン | Minecraft 雑談掲示板
+permalink: /login.html
+---
 
-  <div class="container">
-    <h2>ログイン</h2>
-    <div class="input-group">
-      <label for="email">メールアドレス</label>
-      <input id="email" type="email" placeholder="メールアドレス" />
-    </div>
-    <div class="input-group">
-      <label for="password">パスワード</label>
-      <input id="password" type="password" placeholder="パスワード" />
-    </div>
-    <button id="btnLogin" class="login-btn">ログイン</button>
-
-    <div id="error" class="error-banner"></div>
-
-    <div class="link" style="text-align:center; margin-top:0.5rem; font-size:0.9rem;">
-      <a href="register.html">新規登録はこちら</a>
-    </div>
+<div class="container">
+  <h2>ログイン</h2>
+  <div class="input-group">
+    <label for="email">メールアドレス</label>
+    <input id="email" type="email" placeholder="メールアドレス" />
   </div>
+  <div class="input-group">
+    <label for="password">パスワード</label>
+    <input id="password" type="password" placeholder="パスワード" />
+  </div>
+  <button id="btnLogin" class="login-btn">ログイン</button>
+  <div id="error" class="error-banner"></div>
+  <div class="link"><a href="register.html">新規登録はこちら</a></div>
+</div>
 
-  <script type="module">
-    import { auth, loginWithEmail, observeAuth, logout } from './auth.js';
+<script type="module">
+  import { auth, loginWithEmail, observeAuth, logout } from './auth.js';
+  const navUser = document.getElementById('navUser'),
+        navLogin = document.getElementById('navLogin'),
+        navLogout= document.getElementById('navLogout'),
+        emailEl  = document.getElementById('email'),
+        passEl   = document.getElementById('password'),
+        btnLogin = document.getElementById('btnLogin'),
+        errorEl  = document.getElementById('error');
 
-    const navUser   = document.getElementById('navUser');
-    const navLogin  = document.getElementById('navLogin');
-    const navLogout = document.getElementById('navLogout');
-    const emailEl   = document.getElementById('email');
-    const passEl    = document.getElementById('password');
-    const btnLogin  = document.getElementById('btnLogin');
-    const errorEl   = document.getElementById('error');
-
-    // 認証状態監視（ナビバー表示／ページ遷移）
-    observeAuth(user => {
-      if (user && user.emailVerified) {
-        // displayName がなければ設定ページへ、あればトップへ
-        if (!user.displayName) {
-          location.href = 'setup.html';
-        } else {
-          location.href = 'index.html';
-        }
-      }
-      if (user && user.emailVerified) {
-        navUser.textContent    = user.displayName + ' さん';
-        navLogin.style.display  = 'none';
-        navLogout.style.display = '';
-      } else {
-        navUser.textContent    = '';
-        navLogin.style.display  = '';
-        navLogout.style.display = 'none';
-      }
-    });
-
-    navLogout.addEventListener('click', () => logout());
-
-    btnLogin.addEventListener('click', async () => {
-      errorEl.style.display = 'none';
-      try {
-        await loginWithEmail(emailEl.value, passEl.value);
-        if (!auth.currentUser.emailVerified) {
-          throw new Error('認証メールを確認してください。');
-        }
-      } catch (e) {
-        errorEl.textContent   = e.message;
-        errorEl.style.display = 'block';
-      }
-    });
-  </script>
-</body>
-</html>
+  observeAuth(user => {
+    if (user && user.emailVerified) {
+      location.href = user.displayName ? 'index.html' : 'setup.html';
+    }
+    navUser.textContent    = user?.displayName ? user.displayName + ' さん' : '';
+    navLogin.style.display = user?.emailVerified ? 'none' : '';
+    navLogout.style.display= user?.emailVerified ? '' : 'none';
+  });
+  navLogout.addEventListener('click', () => logout());
+  btnLogin.addEventListener('click', async () => {
+    errorEl.style.display = 'none';
+    try {
+      await loginWithEmail(emailEl.value, passEl.value);
+      if (!auth.currentUser.emailVerified) throw new Error('認証メールを確認してください。');
+    } catch (e) {
+      errorEl.textContent = e.message;
+      errorEl.style.display = 'block';
+    }
+  });
+</script>
