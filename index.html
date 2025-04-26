@@ -1,70 +1,46 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <title>Minecraft 雑談掲示板</title>
-  <link rel="icon" href="minecraft-chat-board-logo.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <!-- ナビバー -->
-  <header class="navbar">
-    <a href="index.html" class="navbar-brand">
-      <img src="minecraft-chat-board.png" alt="Minecraft 雑談掲示板" style="height: 40px;">
-    </a>
-    <div class="navbar-menu">
-      <span id="navUser"></span>
-      <a href="login.html" id="navLogin" class="nav-link">ログイン</a>
-      <span id="navLogout" class="nav-link" style="display:none;">ログアウト</span>
-    </div>
-  </header>
+---
+layout: default
+title: ホーム
+permalink: /index.html
+---
 
-  <!-- サイドバー／コンテンツは後で実装 -->
-  <main class="content">
-    <p>チャット機能は現在オフラインです。<br>ログイン後に、最新情報やお知らせを見ることができます。</p>
-    <!-- ここからスレッド風ボタンエリア -->
-    <section class="thread-section">
-      <h2 class="thread-section-title">スレッド一覧</h2>
-      <div class="thread-list">
-        <a href="index.html/maruti" class="thread-btn">マルチ募集</a>
-        <a href="index.html/command" class="thread-btn">コマンド関連</a>
-        <a href="index.html/zatsudan" class="thread-btn">雑談・雑学</a>
-        <a href="index.html/build" class="thread-btn">建築自慢</a>
-        <!-- 必要なだけ増やしてください -->
-      </div>
-    </section>
-    <!-- ここまで -->
-    <div id="content"></div>
-  </main>
+<p>チャット機能は現在オフラインです。<br>ログイン後に、最新情報やお知らせを見ることができます。</p>
 
-  <script type="module">
-    import { auth, observeAuth, logout } from './auth.js';
+<section class="thread-section">
+  <h2 class="thread-section-title">スレッド一覧</h2>
+  <div class="thread-list">
+    <a href="index.html/maruti" class="thread-btn">マルチ募集 <span class="count">(23)</span></a>
+    <a href="index.html/command" class="thread-btn">コマンド関連 <span class="count">(5)</span></a>
+    <a href="index.html/zatsudan" class="thread-btn">雑談・雑学 <span class="count">(12)</span></a>
+    <a href="index.html/build" class="thread-btn">建築自慢 <span class="count">(8)</span></a>
+  </div>
+</section>
 
-    const navUser   = document.getElementById('navUser');
-    const navLogin  = document.getElementById('navLogin');
-    const navLogout = document.getElementById('navLogout');
-    const contentEl = document.getElementById('content');
+<div id="content"></div>
 
-    observeAuth(user => {
-      if (user && user.emailVerified) {
-        // ユーザー名 さん を表示
-        navUser.textContent   = user.displayName + ' さん';
-        navLogin.style.display  = 'none';
-        navLogout.style.display = '';
-        // コンテンツ
-        contentEl.textContent = 'ようこそ！最新のお知らせがあればここに表示されます。';
-      } else {
-        navUser.textContent   = '';
-        navLogin.style.display  = '';
-        navLogout.style.display = 'none';
-        contentEl.textContent = 'ログインすると最新情報を確認できます。';
-      }
-    });
+<script type="module">
+  import { auth, observeAuth, logout } from './auth.js';
 
-    navLogout.addEventListener('click', () => {
-      logout();
-    });
-  </script>
-</body>
-</html>
+  const navUser   = document.getElementById('navUser');
+  const navLogin  = document.getElementById('navLogin');
+  const navLogout = document.getElementById('navLogout');
+  const contentEl = document.getElementById('content');
+
+  observeAuth(user => {
+    if (user && user.emailVerified) {
+      navUser.textContent    = user.displayName + ' さん';
+      navLogin.style.display  = 'none';
+      navLogout.style.display = '';
+      contentEl.textContent   = 'ようこそ！最新のお知らせがあればここに表示されます。';
+    } else {
+      navUser.textContent    = '';
+      navLogin.style.display  = '';
+      navLogout.style.display = 'none';
+      contentEl.textContent   = 'ログインすると最新情報を確認できます。';
+    }
+  });
+
+  navLogout.addEventListener('click', () => {
+    logout();
+  });
+</script>
