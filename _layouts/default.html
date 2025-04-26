@@ -1,0 +1,17 @@
+<!-- _layouts/default.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ page.title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="minecraft-chat-board-logo.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  {% include navbar.html %}  <!-- ここで共通ナビバーを挿入 :contentReference[oaicite:0]{index=0} -->
+  <main class="content">
+    {{ content }}            <!-- 各ページ固有の本文 -->
+  </main>
+</body>
+</html>
