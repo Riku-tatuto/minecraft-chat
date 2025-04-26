@@ -16,6 +16,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyA1GqU0-xO_f3Wq6yGOs8nf9ZVFLG-Z4dU",
   authDomain: "minecraft-chat-board.firebaseapp.com",
   projectId: "minecraft-chat-board",
+  databaseURL: "https://minecraft-chat-board-default-rtdb.firebaseio.com/",  // ← 追加
   storageBucket: "minecraft-chat-board.firebasestorage.app",
   messagingSenderId: "394340520586",
   appId: "1:394340520586:web:d822713f8d7357104b9373"
