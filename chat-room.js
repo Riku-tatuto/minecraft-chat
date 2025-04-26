@@ -7,18 +7,8 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 import { auth, observeAuth, logout, app } from './auth.js';  // ← app をインポート
 
-// ── Firebase 初期化 ────────────────────────────────────────
-const firebaseConfig = {
-  apiKey: "AIzaSyA1GqU0-xO_f3Wq6yGOs8nf9ZVFLG-Z4dU",
-  authDomain: "minecraft-chat-board.firebaseapp.com",
-  databaseURL: "https://minecraft-chat-board-default-rtdb.firebaseio.com",
-  projectId: "minecraft-chat-board",
-  storageBucket: "minecraft-chat-board.firebasestorage.app",
-  messagingSenderId: "394340520586",
-  appId: "1:394340520586:web:d822713f8d7357104b9373"
-};
-const app = initializeApp(firebaseConfig);
-const db  = getDatabase(app);
+// ── Firebase 再初期化は不要 ───────────────────────────────────
+const db = getDatabase(app);
 // ────────────────────────────────────────────────────────
 
 // URL末尾からルームID取得（例: "heya1"）
