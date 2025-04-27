@@ -9,10 +9,10 @@ import { auth, observeAuth, app } from './auth.js';
 
 const db = getDatabase(app);
 
-// URL 解析：["", "リポ名", "category", "roomId", "thread"]
-const segs = location.pathname.replace(/\/$/, '').split('/');
-const category  = segs[2];       // 例 "command" または "maruti"
-const roomId    = segs[3];       // 例 "heya1"
+// URL 解析
+const segs = location.pathname.replace(/\/$/,'').split('/');
+const category  = segs[2];
+const roomId    = segs[3];
 const params    = new URLSearchParams(location.search);
 const messageId = params.get('id');
 
@@ -20,19 +20,19 @@ const mainEl    = document.getElementById('thread-main');
 const repliesEl = document.getElementById('thread-replies');
 
 // 元メッセージ表示
-const mainRef = dbRef(db, `rooms/${category}/${roomId}/messages/${messageId}`);
-onValue(mainRef, snap => {
+onValue(dbRef(db, `rooms/${category}/${roomId}/messages/${messageId}`), snap => {
   const msg = snap.val();
   if (!msg) return;
-  const t = new Date(msg.timestamp);
-  const hh = String(t.getHours()).padStart(2,'0');
-  const mm = String(t.getMinutes()).padStart(2,'0');
+  const d = new Date(msg.timestamp);
+  const fmt = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ` +
+              `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   mainEl.innerHTML = `
     <div class="chat-message">
-      <span class="timestamp">[${hh}:${mm}]</span>
-      <span class="username">${msg.user}</span>:
-      <span class="message-text">${msg.text}</span>
-    </div>`;
+      <span class="username">${msg.user}</span>
+      <span class="timestamp">${fmt}</span>
+    </div>
+    <div class="message-text">${msg.text}</div>
+  `;
   if (msg.imageBase64) {
     const img = document.createElement('img');
     img.src = msg.imageBase64;
@@ -41,7 +41,7 @@ onValue(mainRef, snap => {
   }
 });
 
-// 返信入力エリア
+// 返信入力
 mainEl.insertAdjacentHTML('afterend', `
   <div id="reply-input" class="chat-input-area">
     <input type="text" id="replyInput" placeholder="返信を入力..." disabled />
@@ -78,7 +78,7 @@ btnReplySend.addEventListener('click', async () => {
   await push(
     dbRef(db, `rooms/${category}/${roomId}/messages/${messageId}/replies`),
     {
-      uid: auth.currentUser.uid,
+      uid:  auth.currentUser.uid,
       user: auth.currentUser.displayName || auth.currentUser.email,
       text,
       timestamp: Date.now()
@@ -86,24 +86,22 @@ btnReplySend.addEventListener('click', async () => {
   );
 });
 
-// 返信一覧表示
-onValue(
-  dbRef(db, `rooms/${category}/${roomId}/messages/${messageId}/replies`),
-  snap => {
-    repliesEl.innerHTML = '';
-    snap.forEach(child => {
-      const msg = child.val();
-      const t = new Date(msg.timestamp);
-      const hh = String(t.getHours()).padStart(2,'0');
-      const mm = String(t.getMinutes()).padStart(2,'0');
-      const el = document.createElement('div');
-      el.classList.add('chat-message');
-      el.innerHTML = `
-        <span class="timestamp">[${hh}:${mm}]</span>
-        <span class="username">${msg.user}</span>:
-        <span class="message-text">${msg.text}</span>`;
-      repliesEl.appendChild(el);
-    });
-    repliesEl.scrollTop = repliesEl.scrollHeight;
-  }
-);
+// 返信一覧
+onValue(dbRef(db, `rooms/${category}/${roomId}/messages/${messageId}/replies`), snap => {
+  repliesEl.innerHTML = '';
+  snap.forEach(ch => {
+    const msg = ch.val();
+    const d = new Date(msg.timestamp);
+    const fmt = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ` +
+                `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const el = document.createElement('div');
+    el.classList.add('chat-message');
+    el.innerHTML = `
+      <span class="username">${msg.user}</span>
+      <span class="timestamp">${fmt}</span>
+      <div class="message-text">${msg.text}</div>
+    `;
+    repliesEl.appendChild(el);
+  });
+  repliesEl.scrollTop = repliesEl.scrollHeight;
+});
