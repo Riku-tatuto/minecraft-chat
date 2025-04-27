@@ -1,5 +1,3 @@
-/* styles.css */
-
 /* ── リセット＆全体設定 ── */
 html, body {
   height: 100%;
@@ -190,7 +188,6 @@ td div.detail {
 }
 
 /* ── チャット画面専用 ── */
-/* chat-room.js で body に直接追加される #chat-container を固定配置 */
 #chat-container {
   position: fixed;
   top: 60px;    /* ナビバーの下 */
@@ -203,8 +200,6 @@ td div.detail {
   overflow: hidden;
   z-index: 1;
 }
-
-/* メッセージ表示領域 */
 .chat-messages {
   flex: 1;
   padding: 1rem;
@@ -212,99 +207,12 @@ td div.detail {
   background: #f4f4f4;
 }
 
-/* 各メッセージ */
-.chat-message {
-  margin-bottom: 0.5rem;
-  line-height: 1.4;
-}
-.chat-message .timestamp {
-  color: #888;
-  font-size: 0.75rem;
-  margin-right: 0.5rem;
-}
-.chat-message .username {
-  font-weight: bold;
-  margin-right: 0.3rem;
-}
-.chat-message .message-text {
-  word-break: break-word;
-}
-
-/* 入力エリア */
-.chat-input-area {
-  display: flex;
-  border-top: 1px solid #ddd;
-  padding: 0.5rem;
-  background: #fff;
-}
-.chat-input-area input {
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-.chat-input-area button {
-  margin-left: 0.5rem;
-  padding: 0 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.chat-input-area button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* チャット部分 */
-.chat-input-area button#btnImg {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  margin-right: 0.5rem;
-}
-.chat-input-area button#btnImg:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* 画像メッセージ */
-.chat-image {
-  display: block;
-  max-width: 200px;
-  max-height: 200px;
-  margin-top: 0.5rem;
-  border-radius: 4px;
-}
-
-/* 返信ボタン・リンク */
-.reply-info {
-  margin-top: 0.25rem;
-  font-size: 0.75rem;
-}
-.reply-count {
-  color: #555;
-  cursor: pointer;
-}
-.btnReply {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.9rem;
-  margin-left: 0.5rem;
-  display: none;
-}
-.chat-message:hover .btnReply {
-  display: inline;
-}
-
-/* スレッドページのメインメッセージ */
+/* ── スレッドページのメインメッセージ／返信 ── */
 .chat-thread-main {
   padding: 1rem;
   border-bottom: 1px solid #ddd;
   background: #fafafa;
 }
-/* スレッドページの返信エリア */
 .chat-thread-replies {
   flex: 1;
   padding: 1rem;
@@ -312,101 +220,34 @@ td div.detail {
   max-height: calc(100vh - 200px); /* 適宜調整 */
   overflow-y: auto;
 }
-/* 返信入力欄 */
 #reply-input {
   border-top: 1px solid #ddd;
   padding: 0.5rem;
   background: #fff;
 }
 
-/* styles.css のチャット周りに追記/置き換え */
-
-/* 各メッセージを相対位置に */
+/* ── styles.css のチャット周りに追記／置き換え ── */
 .chat-message {
   position: relative;
   margin-bottom: 0.5rem;
   line-height: 1.4;
-  padding: 0.25rem 2rem 0.25rem 0; /* 上下に余白をつける */
-  display: flow-root;      /* BFC を 明示的に 作る → margin collapse 防止&#8203;:contentReference[oaicite:0]{index=0} */
-  overflow: visible;       /* はみ出しを許可 → ボタンが切れなくなる&#8203;:contentReference[oaicite:1]{index=1} */
+  padding-right: 2rem; /* 右端にボタン用スペース確保 */
+  overflow: hidden;
 }
-
-/* 返信情報の共通 */
 .reply-info {
   margin-top: 0.25rem;
-  font-size: 0.75rem;
-  /* reply-count は左に、btnReply は右端に配置 */
-}
-
-/* 返信件数 */
-.reply-count {
-  color: #555;
-  cursor: pointer;
-}
-
-/* 返信ボタンを絶対配置して幅変化を防止 */
-.btnReply {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  visibility: hidden;
-}
-
-/* ホバー時にだけ可視化 */
-.chat-message:hover .btnReply {
-  visibility: visible;
-}
-
-/* 既存のチャット画像や入力エリアはそのまま */
-.chat-image {
-  display: block;
-  max-width: 200px;
-  max-height: 200px;
-  margin-top: 0.5rem;
-  border-radius: 4px;
-}
-
-.chat-input-area {
-  display: flex;
-  border-top: 1px solid #ddd;
-  padding: 0.5rem;
-  background: #fff;
-}
-.chat-input-area input {
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-.chat-input-area button {
-  margin-left: 0.5rem;
-  padding: 0 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.chat-input-area button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* 返信＆転送ボタンの共通 */
-.reply-info {
-  margin-top: 0;
   padding-top: 0.25rem;
   font-size: 0.75rem;
   position: relative;
 }
-
-/* 返信ボタン */
+.reply-count {
+  color: #555;
+  cursor: pointer;
+}
 .btnReply {
   position: absolute;
-  top: 0.25rem;            /* padding-top と合わせる */
-  right: 1.5rem;
+  top: 0;
+  right: 1.5rem;  /* 転送ボタンと重ならないように */
   background: none;
   border: none;
   cursor: pointer;
@@ -416,8 +257,6 @@ td div.detail {
 .chat-message:hover .btnReply {
   visibility: visible;
 }
-
-/* 転送ボタン */
 .btnForward {
   position: absolute;
   top: 0;
@@ -431,64 +270,38 @@ td div.detail {
 .chat-message:hover .btnForward {
   visibility: visible;
 }
-
-/* 転送元表示 */
 .forward-info {
   font-size: 0.75rem;
   color: #888;
   margin-bottom: 0.25rem;
 }
-
-/* １）画面全体を高さ100vhのflexコンテナに */
-#chat-container {
-  display: flex;
-  height: 100vh;         /* ビューポート高さに合わせる */
-  overflow: hidden;       /* 子要素のはみ出しを隠す */
+.chat-image {
+  display: block;
+  max-width: 200px;
+  max-height: 200px;
+  margin-top: 0.5rem;
+  border-radius: 4px;
 }
-
-/* サイドバー＋メイン領域を横並び */
-#sidebar {
-  width: 200px;
-  /* …既存スタイル… */
-}
-#main {
-  flex: 1;
-  display: flex;
-  flex-direction: column; /* 縦に並べる */
-  position: relative;     /* .chat-input-area の absolute 基準 */
-  overflow: hidden;       /* 内部でスクロールを完結させる */
-}
-
-/* ２）メッセージ領域だけスクロール可能に */
-.chat-messages {
-  flex: 1;                /* #main の残り高さをすべて占める */
-  overflow-y: auto;       /* 縦スクロールを有効化&#8203;:contentReference[oaicite:0]{index=0} */
-  padding-bottom: 60px;    /* 入力欄の高さ分だけ余白を入れて隠れを防止 */
-}
-
-/* ３）入力エリアを #main の下端に固定 */
 .chat-input-area {
-  position: absolute;     /* #main 内で絶対配置 */
-  bottom: 0;              /* #main の下端にぴったり */
-  left: 0;                /* #main の左端 */
-  right: 0;               /* #main の右端 */
-  height: 60px;           /* 任意の高さ */
   display: flex;
-  align-items: center;
-  padding: 0 1rem;
+  border-top: 1px solid #ddd;
+  padding: 0.5rem;
   background: #fff;
-  box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-  z-index: 10;            /* メッセージより前面に */  
 }
-
-/* テキスト入力欄を横いっぱいに */
-.chat-input-area input[type="text"] {
+.chat-input-area input {
   flex: 1;
-  margin: 0 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
-
-/* 画像ボタン・送信ボタンも高さ揃え */
 .chat-input-area button {
-  height: 36px;
-  flex-shrink: 0;
+  margin-left: 0.5rem;
+  padding: 0 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.chat-input-area button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
