@@ -16,7 +16,7 @@ import { auth, observeAuth, logout, app } from './auth.js';
 const db      = getDatabase(app);
 const roomId  = location.pathname.replace(/\/$/, '').split('/').pop();
 const roomRef = dbRef(db, `rooms/${roomId}/messages`);
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 40;
 
 // state
 let oldestTs = null;
