@@ -15,7 +15,7 @@ import { auth, observeAuth, logout, app } from './auth.js';
 
 const db         = getDatabase(app);
 const roomRef    = dbRef(db, `rooms`);
-const PAGE_SIZE  = 20;
+const PAGE_SIZE  = 40;
 
 // 現在のルームID とタイムスタンプ境界
 const parts       = location.pathname.replace(/\/$/, '').split('/');
