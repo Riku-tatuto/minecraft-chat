@@ -297,3 +297,25 @@ td div.detail {
 .chat-message:hover .btnReply {
   display: inline;
 }
+
+/* スレッドページのメインメッセージ */
+.chat-thread-main {
+  padding: 1rem;
+  border-bottom: 1px solid #ddd;
+  background: #fafafa;
+}
+/* スレッドページの返信エリア */
+.chat-thread-replies {
+  flex: 1;
+  padding: 1rem;
+  background: #fff;
+  max-height: calc(100vh - 200px); /* 適宜調整 */
+  overflow-y: auto;
+}
+/* 返信入力欄 */
+#reply-input {
+  border-top: 1px solid #ddd;
+  padding: 0.5rem;
+  background: #fff;
+}
+
