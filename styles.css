@@ -254,3 +254,25 @@ td div.detail {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* チャット部分 */
+.chat-input-area button#btnImg {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+.chat-input-area button#btnImg:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 画像メッセージ */
+.chat-image {
+  display: block;
+  max-width: 200px;
+  max-height: 200px;
+  margin-top: 0.5rem;
+  border-radius: 4px;
+}
