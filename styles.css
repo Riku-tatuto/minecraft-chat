@@ -276,3 +276,24 @@ td div.detail {
   margin-top: 0.5rem;
   border-radius: 4px;
 }
+
+/* 返信ボタン・リンク */
+.reply-info {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+}
+.reply-count {
+  color: #555;
+  cursor: pointer;
+}
+.btnReply {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-left: 0.5rem;
+  display: none;
+}
+.chat-message:hover .btnReply {
+  display: inline;
+}
