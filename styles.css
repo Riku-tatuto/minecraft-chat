@@ -438,3 +438,57 @@ td div.detail {
   color: #888;
   margin-bottom: 0.25rem;
 }
+
+/* １）画面全体を高さ100vhのflexコンテナに */
+#chat-container {
+  display: flex;
+  height: 100vh;         /* ビューポート高さに合わせる */
+  overflow: hidden;       /* 子要素のはみ出しを隠す */
+}
+
+/* サイドバー＋メイン領域を横並び */
+#sidebar {
+  width: 200px;
+  /* …既存スタイル… */
+}
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column; /* 縦に並べる */
+  position: relative;     /* .chat-input-area の absolute 基準 */
+  overflow: hidden;       /* 内部でスクロールを完結させる */
+}
+
+/* ２）メッセージ領域だけスクロール可能に */
+.chat-messages {
+  flex: 1;                /* #main の残り高さをすべて占める */
+  overflow-y: auto;       /* 縦スクロールを有効化&#8203;:contentReference[oaicite:0]{index=0} */
+  padding-bottom: 60px;    /* 入力欄の高さ分だけ余白を入れて隠れを防止 */
+}
+
+/* ３）入力エリアを #main の下端に固定 */
+.chat-input-area {
+  position: absolute;     /* #main 内で絶対配置 */
+  bottom: 0;              /* #main の下端にぴったり */
+  left: 0;                /* #main の左端 */
+  right: 0;               /* #main の右端 */
+  height: 60px;           /* 任意の高さ */
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  background: #fff;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+  z-index: 10;            /* メッセージより前面に */  
+}
+
+/* テキスト入力欄を横いっぱいに */
+.chat-input-area input[type="text"] {
+  flex: 1;
+  margin: 0 0.5rem;
+}
+
+/* 画像ボタン・送信ボタンも高さ揃え */
+.chat-input-area button {
+  height: 36px;
+  flex-shrink: 0;
+}
