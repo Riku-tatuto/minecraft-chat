@@ -454,3 +454,78 @@ td div.detail {
 .chat-message:hover .reply-info {
   opacity: 1; pointer-events: auto;
 }
+
+.chat-messages {
+  display: flex;
+  flex-direction: column; /* 各メッセージを縦に積む&#8203;:contentReference[oaicite:0]{index=0} */
+  gap: 0.5rem;
+}
+
+.chat-message {
+  position: relative;
+  display: flex;              /* ヘッダー→本文→ボタンを縦に並べないために各自制御 */
+  flex-direction: column;     /* メッセージ内は縦積み */
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+/* 通常ヘッダー */
+.message-header {
+  display: flex;              /* ユーザー名と時間を同じ行に */
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+/* 転送ヘッダー */
+.forwarded-header {
+  font-size: 0.85rem;
+  color: #555;
+  background: #eef;
+  padding: 0.25rem;
+  border-left: 3px solid #88f;
+  margin-bottom: 0.25rem;
+  white-space: pre-wrap;
+}
+
+/* 転送本文（淡色） */
+.forwarded-content {
+  opacity: 0.6;
+  padding: 0.25rem 0.5rem;
+  background: #f5f5f5;
+  border-radius: 4px;
+  margin-bottom: 0.25rem;
+}
+
+/* 転送元情報行 */
+.forwarded-footer {
+  font-size: 0.75rem;
+  color: #777;
+  margin-bottom: 0.5rem;
+}
+
+/* ホバー時の強調 */
+.chat-message:hover {
+  background: #f0f0f0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* ボタン群 */
+.reply-info {
+  position: absolute;
+  top: 0.25rem; right: 0.25rem;
+  display: flex; gap: 0.25rem;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+}
+.chat-message:hover .reply-info {
+  opacity: 1; pointer-events: auto;
+}
+.btnReply, .btnForward {
+  background: none; border: none; cursor: pointer;
+  font-size: 1rem; line-height: 1; padding: 0.2rem;
+}
+.btnReply:hover, .btnForward:hover {
+  background: rgba(0,0,0,0.05);
+}
