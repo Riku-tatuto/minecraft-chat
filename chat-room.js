@@ -7,8 +7,6 @@ import {
   query,
   orderByChild,
   limitToLast,
-  endAt,
-  startAt,
   onChildAdded
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 import { auth, observeAuth, app } from './auth.js';
@@ -26,7 +24,7 @@ const PAGE_SIZE = 40;
 let oldestTs = null, newestTs = null, loadingOlder = false;
 let roomList = [];
 
-// DOM 構築
+// — DOM 構築 —
 document.body.insertAdjacentHTML('beforeend', `
   <div id="chat-container">
     <h2>ルーム: ${category} / ${roomId}</h2>
@@ -37,9 +35,12 @@ document.body.insertAdjacentHTML('beforeend', `
       <input id="msgInput" type="text" placeholder="メッセージを入力..." disabled />
       <button id="btnSend" disabled>送信</button>
     </div>
+    <!-- 転送先選択メニュー -->
+    <div id="forwardMenu" class="forward-menu" style="display:none;"></div>
   </div>
 `);
 const messagesEl = document.getElementById('messages');
+const forwardMenu = document.getElementById('forwardMenu');
 const imgInput   = document.getElementById('imgInput');
 const btnImg     = document.getElementById('btnImg');
 const inputEl    = document.getElementById('msgInput');
@@ -115,7 +116,6 @@ function renderMessage(msgObj, prepend=false) {
     forwardedFromRoom, forwardedCategory, forwardedAt
   } = msgObj;
 
-  // 日時フォーマット
   function fmt(ts) {
     const d = new Date(ts);
     const Y=d.getFullYear(), M=String(d.getMonth()+1).padStart(2,'0'),
@@ -129,7 +129,7 @@ function renderMessage(msgObj, prepend=false) {
   el.classList.add('chat-message');
 
   if (forwardedFromRoom) {
-    // 転送ヘッダー（ユーザー名＋転送時間）
+    // 転送ヘッダー
     const hdr = document.createElement('div');
     hdr.classList.add('forwarded-header');
     hdr.textContent = `${user}  ${fmt(timestamp)}`;
@@ -139,20 +139,20 @@ function renderMessage(msgObj, prepend=false) {
     orig.classList.add('forwarded-content');
     orig.textContent = text;
     el.appendChild(orig);
-    // 転送元情報行
+    // 転送元行
     const ftr = document.createElement('div');
     ftr.classList.add('forwarded-footer');
     ftr.textContent = `転送元: ${forwardedCategory} / ${forwardedFromRoom}  ${fmt(forwardedAt)}`;
     el.appendChild(ftr);
   } else {
-    // 通常ヘッダー（ユーザー名＋時間を同じ行）
+    // 通常ヘッダー（左揃え）
     const header = document.createElement('div');
     header.classList.add('message-header');
     header.innerHTML =
       `<span class="username">${user}</span> ` +
       `<span class="timestamp">${fmt(timestamp)}</span>`;
     el.appendChild(header);
-    // 本文をその下に
+    // 本文
     const body = document.createElement('div');
     body.classList.add('message-text');
     body.textContent = text;
@@ -166,18 +166,14 @@ function renderMessage(msgObj, prepend=false) {
     el.appendChild(img);
   }
 
-  // 返信・転送ボタン領域
+  // 返信・転送ボタン
   const info = document.createElement('div');
   info.classList.add('reply-info');
   const replyBtn = document.createElement('button');
-  replyBtn.classList.add('btnReply');
-  replyBtn.dataset.id = key;
-  replyBtn.textContent = '🗨️';
+  replyBtn.classList.add('btnReply'); replyBtn.dataset.id = key; replyBtn.textContent = '🗨️';
   info.appendChild(replyBtn);
   const fwdBtn = document.createElement('button');
-  fwdBtn.classList.add('btnForward');
-  fwdBtn.dataset.id = key;
-  fwdBtn.textContent = '⤴️';
+  fwdBtn.classList.add('btnForward'); fwdBtn.dataset.id = key; fwdBtn.textContent = '⤴️';
   info.appendChild(fwdBtn);
   el.appendChild(info);
 
@@ -185,7 +181,7 @@ function renderMessage(msgObj, prepend=false) {
   else        messagesEl.appendChild(el);
 }
 
-// 初回ロード～新着～古い読み込み（省略せず以前のまま実装）…
+// 初回ロード／新着／古い読み込み
 async function loadInitial() {
   const q = query(messagesRef, orderByChild('timestamp'), limitToLast(PAGE_SIZE));
   const snap = await get(q);
@@ -226,34 +222,64 @@ async function loadOlder() {
 }
 messagesEl.addEventListener('scroll',()=>{ if(messagesEl.scrollTop===0) loadOlder(); });
 
-// クリック（返信／転送）
-messagesEl.addEventListener('click', async e=>{
-  const tgt=e.target;
+// — クリック処理 —  
+messagesEl.addEventListener('click', e => {
+  const tgt = e.target;
   if (tgt.classList.contains('btnReply')) {
     window.location.href = `${location.origin}${repo}/${category}/${roomId}/thread/?id=${tgt.dataset.id}`;
   }
   if (tgt.classList.contains('btnForward')) {
-    const id=tgt.dataset.id;
-    const origSnap=await get(dbRef(db,`rooms/${category}/${roomId}/messages/${id}`));
-    const orig=origSnap.val();
-    const list=roomList.map((r,i)=>`${i+1}: ${r.label}`).join('\n');
-    const sel=prompt(`転送先番号を入力してください：\n${list}`);
-    const idx=parseInt(sel,10)-1;
-    if (!roomList[idx]) { alert('正しい番号を入力してください'); return; }
-    const t=roomList[idx];
-    await push(dbRef(db,`rooms/${t.category}/${t.id}/messages`), {
-      uid:auth.currentUser.uid,
-      user:auth.currentUser.displayName||auth.currentUser.email,
-      text:orig.text,
-      imageBase64:orig.imageBase64||'',
-      forwardedFromRoom:roomId,
-      forwardedCategory:category,
-      forwardedAt:Date.now(),
-      timestamp:Date.now()
-    });
-    alert(`メッセージを「${t.label}」へ転送しました`);
+    // 独自UI表示
+    showForwardMenu(tgt, tgt.dataset.id);
   }
 });
 
-// 実行
+// 転送メニュー表示・選択処理
+function showForwardMenu(button, messageId) {
+  // メニュー要素をクリア＆表示
+  forwardMenu.innerHTML = '';
+  forwardMenu.style.display = 'block';
+  // 各ルームをリスト化
+  roomList.forEach((r,i) => {
+    const item = document.createElement('div');
+    item.classList.add('forward-item');
+    item.textContent = r.label;
+    item.dataset.idx = i;
+    forwardMenu.appendChild(item);
+  });
+  // メニュー位置調整
+  const rect = button.getBoundingClientRect();
+  forwardMenu.style.top  = `${rect.bottom + window.scrollY}px`;
+  forwardMenu.style.left = `${rect.left + window.scrollX}px`;
+
+  // クリックで転送実行
+  forwardMenu.onclick = async e => {
+    const idx = e.target.dataset.idx;
+    if (idx == null) return;
+    const tgtRoom = roomList[parseInt(idx,10)];
+    const origSnap = await get(dbRef(db, `rooms/${category}/${roomId}/messages/${messageId}`));
+    const orig = origSnap.val();
+    await push(dbRef(db, `rooms/${tgtRoom.category}/${tgtRoom.id}/messages`), {
+      uid: auth.currentUser.uid,
+      user: auth.currentUser.displayName||auth.currentUser.email,
+      text: orig.text,
+      imageBase64: orig.imageBase64||'',
+      forwardedFromRoom: roomId,
+      forwardedCategory: category,
+      forwardedAt: Date.now(),
+      timestamp: Date.now()
+    });
+    forwardMenu.style.display = 'none';
+    alert(`メッセージを「${tgtRoom.label}」へ転送しました`);
+  };
+}
+
+// 画面クリックでメニューを閉じる
+document.addEventListener('click', e => {
+  if (!forwardMenu.contains(e.target) && !e.target.classList.contains('btnForward')) {
+    forwardMenu.style.display = 'none';
+  }
+});
+
+// 起動
 loadInitial();
