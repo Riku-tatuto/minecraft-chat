@@ -11,17 +11,16 @@ import {
   startAt,
   onChildAdded
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
-import { auth, observeAuth, logout, app } from './auth.js';
+import { auth, observeAuth, app } from './auth.js';  // logout はもう使わないので除外
 
 const db = getDatabase(app);
 
 // ── URL 解析 ──
-// location.pathname 例 "/minecraft-chat-board/command/heya1"
 const parts    = location.pathname.split('/').filter(Boolean);
-// parts[0] = "minecraft-chat-board", parts[1] = "command", parts[2] = "heya1"
-const repo     = parts[0] ? `/${parts[0]}` : '';     
-const category = parts[1] || 'default';              
-const roomId   = parts[2] || parts[1] || 'lobby';     
+// parts[0] = リポジトリ名, parts[1] = category, parts[2] = roomId
+const repo     = parts[0] ? `/${parts[0]}` : '';
+const category = parts[1] || 'default';
+const roomId   = parts[2] || parts[1] || 'lobby';
 
 // Firebase 参照
 const allRoomsRef = dbRef(db, `rooms`);
@@ -61,12 +60,10 @@ observeAuth(user => {
   btnImg.disabled    = !ok;
   inputEl.disabled   = !ok;
   btnSend.disabled   = !ok;
-  inputEl.placeholder = ok
-    ? 'メッセージを入力...'
-    : 'ログインすると送信できます';
+  inputEl.placeholder = ok ? 'メッセージを入力...' : 'ログインすると送信できます';
 });
 
-// ── 画像アップロード（Base64） ──
+// ── 画像アップロード ──
 btnImg.addEventListener('click', () => imgInput.click());
 imgInput.addEventListener('change', () => {
   const file = imgInput.files[0];
@@ -74,11 +71,11 @@ imgInput.addEventListener('change', () => {
   const reader = new FileReader();
   reader.onload = async () => {
     await push(messagesRef, {
-      uid: auth.currentUser.uid,
-      user: auth.currentUser.displayName || auth.currentUser.email,
-      text: '',
+      uid:        auth.currentUser.uid,
+      user:       auth.currentUser.displayName || auth.currentUser.email,
+      text:       '',
       imageBase64: reader.result,
-      timestamp: Date.now()
+      timestamp:  Date.now()
     });
   };
   reader.readAsDataURL(file);
@@ -87,7 +84,7 @@ imgInput.addEventListener('change', () => {
 
 // ── テキスト送信 ──
 inputEl.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !isComposing && !btnSend.disabled) {
+  if (e.key==='Enter' && !isComposing && !btnSend.disabled) {
     e.preventDefault();
     btnSend.click();
   }
@@ -97,15 +94,15 @@ btnSend.addEventListener('click', async () => {
   if (!text) return;
   inputEl.value = '';
   await push(messagesRef, {
-    uid: auth.currentUser.uid,
-    user: auth.currentUser.displayName || auth.currentUser.email,
+    uid:        auth.currentUser.uid,
+    user:       auth.currentUser.displayName || auth.currentUser.email,
     text,
     imageBase64: '',
-    timestamp: Date.now()
+    timestamp:  Date.now()
   });
 });
 
-// ── 全ルーム一覧取得（転送用リスト） ──
+// ── 全ルーム一覧取得（転送先リスト） ──
 async function loadRoomList() {
   const snap = await get(allRoomsRef);
   const data = snap.val() || {};
@@ -118,36 +115,56 @@ async function loadRoomList() {
 }
 loadRoomList();
 
-// ── メッセージ描画関数 ──
+// ── メッセージ描画 ──
 function renderMessage(msgObj, prepend = false) {
-  const { key, user, text, imageBase64, timestamp, replies, forwardedFromRoom } = msgObj;
-  const time = new Date(timestamp);
-  const hh = String(time.getHours()).padStart(2, '0');
-  const mm = String(time.getMinutes()).padStart(2, '0');
-  const replyCount = replies ? Object.keys(replies).length : 0;
+  const {
+    key, user, text, imageBase64, timestamp,
+    replies, forwardedFromRoom, forwardedCategory, forwardedAt
+  } = msgObj;
+
+  function fmt(ts) {
+    const d = new Date(ts);
+    const Y = d.getFullYear();
+    const M = String(d.getMonth()+1).padStart(2,'0');
+    const D = String(d.getDate()).padStart(2,'0');
+    const h = String(d.getHours()).padStart(2,'0');
+    const m = String(d.getMinutes()).padStart(2,'0');
+    return `${Y}/${M}/${D} ${h}:${m}`;
+  }
 
   const el = document.createElement('div');
   el.classList.add('chat-message');
 
-  // 転送元表示
   if (forwardedFromRoom) {
-    const fwd = document.createElement('div');
-    fwd.classList.add('forward-info');
-    fwd.textContent = `🔄 転送元: ${forwardedFromRoom}`;
-    el.appendChild(fwd);
+    // 転送ヘッダー
+    const hdr = document.createElement('div');
+    hdr.classList.add('forwarded-header');
+    hdr.textContent = `${user}  ${fmt(timestamp)}\n転送元: ${forwardedCategory} / ${forwardedFromRoom}`;
+    el.appendChild(hdr);
+    // オリジナル淡色
+    const orig = document.createElement('div');
+    orig.classList.add('forwarded-content');
+    orig.textContent = text;
+    el.appendChild(orig);
+    // 転送フッター
+    const ftr = document.createElement('div');
+    ftr.classList.add('forwarded-footer');
+    ftr.textContent = fmt(forwardedAt);
+    el.appendChild(ftr);
+  } else {
+    // 通常メッセージ
+    const line = document.createElement('div');
+    line.innerHTML = `<span class="username">${user}</span> <span class="timestamp">${fmt(timestamp)}</span>`;
+    el.appendChild(line);
+    const msg = document.createElement('div');
+    msg.classList.add('message-text');
+    msg.textContent = text;
+    el.appendChild(msg);
   }
 
-  // 本文
-  const textSpan = document.createElement('span');
-  textSpan.classList.add('message-text');
-  textSpan.innerHTML = `<span class="timestamp">[${hh}:${mm}]</span> <span class="username">${user}</span>: ${text}`;
-  el.appendChild(textSpan);
-
-  // 画像
   if (imageBase64) {
     const img = document.createElement('img');
     img.src = imageBase64;
-    img.alt = '送信された画像';
     img.classList.add('chat-image');
     el.appendChild(img);
   }
@@ -155,25 +172,16 @@ function renderMessage(msgObj, prepend = false) {
   // 返信・転送ボタン
   const info = document.createElement('div');
   info.classList.add('reply-info');
-  if (replyCount > 0) {
-    const countSpan = document.createElement('span');
-    countSpan.classList.add('reply-count');
-    countSpan.dataset.id = key;
-    countSpan.textContent = `${replyCount}件の返信`;
-    info.appendChild(countSpan);
-  }
   const replyBtn = document.createElement('button');
   replyBtn.classList.add('btnReply');
   replyBtn.dataset.id = key;
   replyBtn.textContent = '🗨️';
   info.appendChild(replyBtn);
-
   const fwdBtn = document.createElement('button');
   fwdBtn.classList.add('btnForward');
   fwdBtn.dataset.id = key;
   fwdBtn.textContent = '⤴️';
   info.appendChild(fwdBtn);
-
   el.appendChild(info);
 
   if (prepend) messagesEl.insertBefore(el, messagesEl.firstChild);
@@ -184,14 +192,13 @@ function renderMessage(msgObj, prepend = false) {
 async function loadInitial() {
   const q = query(messagesRef, orderByChild('timestamp'), limitToLast(PAGE_SIZE));
   const snap = await get(q);
-  const data = snap.val() || {};
-  const items = Object.entries(data)
-    .map(([key,val]) => ({ key, ...val }))
-    .sort((a,b) => a.timestamp - b.timestamp);
-  items.forEach(item => renderMessage(item));
+  const items = Object.entries(snap.val()||{})
+    .map(([k,v]) => ({ key:k, ...v }))
+    .sort((a,b)=>a.timestamp-b.timestamp);
+  items.forEach(item=>renderMessage(item));
   if (items.length) {
     oldestTs = items[0].timestamp;
-    newestTs = items[items.length - 1].timestamp;
+    newestTs = items[items.length-1].timestamp;
     listenNewer();
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
@@ -199,69 +206,62 @@ async function loadInitial() {
 
 // ── 新着リスニング ──
 function listenNewer() {
-  const qNew = query(messagesRef, orderByChild('timestamp'), startAt(newestTs + 1));
-  onChildAdded(qNew, snap => {
-    const val = snap.val();
-    renderMessage({ key: snap.key, ...val });
-    newestTs = val.timestamp;
+  const q2 = query(messagesRef, orderByChild('timestamp'), startAt(newestTs+1));
+  onChildAdded(q2, snap => {
+    renderMessage({ key:snap.key, ...snap.val() });
+    newestTs = snap.val().timestamp;
     messagesEl.scrollTop = messagesEl.scrollHeight;
   });
 }
 
-// ── 古いメッセージ読み込み ──
+// ── 古い読み込み ──
 async function loadOlder() {
-  if (loadingOlder || oldestTs === null) return;
+  if (loadingOlder || oldestTs===null) return;
   loadingOlder = true;
-  const qOld = query(messagesRef, orderByChild('timestamp'), endAt(oldestTs - 1), limitToLast(PAGE_SIZE));
-  const snap = await get(qOld);
-  const data = snap.val() || {};
-  const items = Object.entries(data)
-    .map(([key,val]) => ({ key, ...val }))
-    .sort((a,b) => a.timestamp - b.timestamp);
+  const q3 = query(messagesRef, orderByChild('timestamp'), endAt(oldestTs-1), limitToLast(PAGE_SIZE));
+  const snap = await get(q3);
+  const items = Object.entries(snap.val()||{})
+    .map(([k,v]) => ({ key:k, ...v }))
+    .sort((a,b)=>a.timestamp-b.timestamp);
   if (items.length) {
-    const prevHeight = messagesEl.scrollHeight;
-    items.forEach(item => renderMessage(item, true));
+    const prev = messagesEl.scrollHeight;
+    items.forEach(i=>renderMessage(i, true));
     oldestTs = items[0].timestamp;
-    messagesEl.scrollTop = messagesEl.scrollHeight - prevHeight;
+    messagesEl.scrollTop = messagesEl.scrollHeight - prev;
   }
   loadingOlder = false;
 }
-messagesEl.addEventListener('scroll', () => {
-  if (messagesEl.scrollTop === 0) loadOlder();
-});
+messagesEl.addEventListener('scroll',()=>{ if(messagesEl.scrollTop===0) loadOlder(); });
 
-// ── 返信・転送クリック処理 ──
+// ── クリック処理 ──
 messagesEl.addEventListener('click', async e => {
   const tgt = e.target;
-  // 返信
-  if (tgt.classList.contains('btnReply') || tgt.classList.contains('reply-count')) {
+  if (tgt.classList.contains('btnReply')) {
     const id = tgt.dataset.id;
     window.location.href = `${location.origin}${repo}/${category}/${roomId}/thread/?id=${id}`;
   }
-  // 転送
   if (tgt.classList.contains('btnForward')) {
     const id = tgt.dataset.id;
     const origSnap = await get(dbRef(db, `rooms/${category}/${roomId}/messages/${id}`));
     const orig = origSnap.val();
-    const listText = roomList.map((r,i) => `${i+1}: ${r.label}`).join('\n');
+    const listText = roomList.map((r,i)=>`${i+1}: ${r.label}`).join('\n');
     const sel = prompt(`転送先番号を入力してください：\n${listText}`);
-    const idx = parseInt(sel, 10) - 1;
-    if (!roomList[idx]) {
-      alert('正しい番号を入力してください');
-      return;
-    }
-    const target = roomList[idx];
-    await push(dbRef(db, `rooms/${target.category}/${target.id}/messages`), {
-      uid: auth.currentUser.uid,
-      user: auth.currentUser.displayName || auth.currentUser.email,
-      text: orig.text,
-      imageBase64: orig.imageBase64 || '',
+    const idx = parseInt(sel,10)-1;
+    if (!roomList[idx]) { alert('正しい番号を入力してください'); return; }
+    const tgtRoom = roomList[idx];
+    await push(dbRef(db, `rooms/${tgtRoom.category}/${tgtRoom.id}/messages`), {
+      uid:        auth.currentUser.uid,
+      user:       auth.currentUser.displayName || auth.currentUser.email,
+      text:       orig.text,
+      imageBase64: orig.imageBase64||'',
       forwardedFromRoom: roomId,
-      timestamp: Date.now()
+      forwardedCategory: category,
+      forwardedAt: Date.now(),
+      timestamp:  Date.now()
     });
-    alert(`メッセージを「${target.label}」へ転送しました`);
+    alert(`メッセージを「${tgtRoom.label}」へ転送しました`);
   }
 });
 
-// ── 実行 ──
+// ── 起動 ──
 loadInitial();
