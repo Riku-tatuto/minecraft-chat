@@ -9,12 +9,15 @@ import { auth, observeAuth, app } from './auth.js';
 
 const db = getDatabase(app);
 
-// URL から room と messageId を取得
-const params  = new URLSearchParams(location.search);
-const roomId   = params.get('room');
-const messageId= params.get('id');
+// URL パスから roomId を取得
+// ["", "リポジトリ名", "command", "{roomId}", "thread"]
+const pathSegments = location.pathname.replace(/\/$/, '').split('/');
+const roomId       = pathSegments[3];
 
-// 要素取得
+// クエリパラメータから messageId を取得
+const params    = new URLSearchParams(location.search);
+const messageId = params.get('id');
+
 const mainEl    = document.getElementById('thread-main');
 const repliesEl = document.getElementById('thread-replies');
 
@@ -24,8 +27,8 @@ onValue(mainRef, snap => {
   const msg = snap.val();
   if (!msg) return;
   const time = new Date(msg.timestamp);
-  const hh = String(time.getHours()).padStart(2,'0');
-  const mm = String(time.getMinutes()).padStart(2,'0');
+  const hh   = String(time.getHours()).padStart(2,'0');
+  const mm   = String(time.getMinutes()).padStart(2,'0');
 
   mainEl.innerHTML = `
     <div class="chat-message">
@@ -42,15 +45,15 @@ onValue(mainRef, snap => {
   }
 });
 
-// 返信用 UI を挿入
+// 返信入力エリアを追加
 mainEl.insertAdjacentHTML('afterend', `
   <div id="reply-input" class="chat-input-area">
-    <input id="replyInput" type="text" placeholder="返信を入力..." disabled />
+    <input type="text" id="replyInput" placeholder="返信を入力..." disabled />
     <button id="btnReplySend" disabled>送信</button>
   </div>
 `);
 
-const replyInput = document.getElementById('replyInput');
+const replyInput   = document.getElementById('replyInput');
 const btnReplySend = document.getElementById('btnReplySend');
 
 // 認証で有効化
@@ -65,7 +68,7 @@ observeAuth(user => {
 
 // Enter で送信
 replyInput.addEventListener('keydown', e => {
-  if (e.key==='Enter' && !replyInput.disabled) {
+  if (e.key === 'Enter' && !btnReplySend.disabled) {
     e.preventDefault();
     btnReplySend.click();
   }
@@ -77,21 +80,21 @@ btnReplySend.addEventListener('click', async () => {
   if (!text) return;
   replyInput.value = '';
   await push(dbRef(db, `rooms/${roomId}/messages/${messageId}/replies`), {
-    uid:         auth.currentUser.uid,
-    user:        auth.currentUser.displayName||auth.currentUser.email,
+    uid:       auth.currentUser.uid,
+    user:      auth.currentUser.displayName || auth.currentUser.email,
     text,
-    timestamp:   Date.now()
+    timestamp: Date.now()
   });
 });
 
 // 返信一覧をリアルタイム表示
 onValue(dbRef(db, `rooms/${roomId}/messages/${messageId}/replies`), snap => {
   repliesEl.innerHTML = '';
-  snap.forEach(child => {
-    const msg = child.val();
+  snap.forEach(childSnap => {
+    const msg = childSnap.val();
     const time = new Date(msg.timestamp);
-    const hh = String(time.getHours()).padStart(2,'0');
-    const mm = String(time.getMinutes()).padStart(2,'0');
+    const hh   = String(time.getHours()).padStart(2,'0');
+    const mm   = String(time.getMinutes()).padStart(2,'0');
     const el = document.createElement('div');
     el.classList.add('chat-message');
     el.innerHTML = `
