@@ -340,3 +340,26 @@ td div.detail {
   font-size: 1rem;
   visibility: hidden;
 }
+
+.chat-message {
+  display: inline-flex;           /* テキストとボタンを同じ行に並べる&#8203;:contentReference[oaicite:1]{index=1} */
+  align-items: center;
+  gap: 0.5rem;                    /* 要素間のすきま&#8203;:contentReference[oaicite:2]{index=2} */
+  margin-bottom: 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.reply-info {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.btnReply,
+.btnForward {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+}
