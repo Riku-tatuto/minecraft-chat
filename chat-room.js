@@ -13,19 +13,21 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 import { auth, observeAuth, logout, app } from './auth.js';
 
-const db      = getDatabase(app);
-const roomId  = location.pathname.replace(/\/$/, '').split('/').pop();
-const roomRef = dbRef(db, `rooms/${roomId}/messages`);
+const db         = getDatabase(app);
+const messagesRef = dbRef(db, `rooms`);
+
+// ページあたりの読み込み数
 const PAGE_SIZE = 40;
 
-// state
+// 現在表示中のルームID とタイムスタンプ境界
+const parts       = location.pathname.replace(/\/$/, '').split('/');
+const roomId      = parts[parts.length - 1];
+const roomRef     = dbRef(db, `rooms/${roomId}/messages`);
 let oldestTs = null;
 let newestTs = null;
 let loadingOlder = false;
-let hasMore = true;
-const loadedKeys = new Set();
 
-// DOM
+// DOM 要素
 document.body.insertAdjacentHTML('beforeend', `
   <div id="chat-container">
     <div id="messages" class="chat-messages"></div>
@@ -43,7 +45,7 @@ const btnImg     = document.getElementById('btnImg');
 const inputEl    = document.getElementById('msgInput');
 const btnSend    = document.getElementById('btnSend');
 
-// IME フラグ
+// IME 判定
 let isComposing = false;
 inputEl.addEventListener('compositionstart', () => { isComposing = true; });
 inputEl.addEventListener('compositionend',   () => { isComposing = false; });
@@ -98,15 +100,12 @@ btnSend.addEventListener('click', async () => {
   });
 });
 
-// メッセージ表示
-function renderMessage(item, prepend = false) {
-  if (loadedKeys.has(item.key)) return;
-  loadedKeys.add(item.key);
-
-  const { key, user, text, imageBase64, timestamp, replies } = item;
+// メッセージ要素を作る関数
+function renderMessage(msgObj, prepend = false) {
+  const { key, user, text, imageBase64, timestamp, replies } = msgObj;
   const time = new Date(timestamp);
-  const hh = String(time.getHours()).padStart(2,'0');
-  const mm = String(time.getMinutes()).padStart(2,'0');
+  const hh = String(time.getHours()).padStart(2, '0');
+  const mm = String(time.getMinutes()).padStart(2, '0');
   const replyCount = replies ? Object.keys(replies).length : 0;
 
   const el = document.createElement('div');
@@ -124,6 +123,7 @@ function renderMessage(item, prepend = false) {
     el.appendChild(img);
   }
 
+  // 返信情報コンテナ
   const info = document.createElement('div');
   info.classList.add('reply-info');
   if (replyCount > 0) {
@@ -138,14 +138,16 @@ function renderMessage(item, prepend = false) {
   btn.dataset.id = key;
   btn.textContent = '🗨️';
   info.appendChild(btn);
-
   el.appendChild(info);
 
-  if (prepend) messagesEl.insertBefore(el, messagesEl.firstChild);
-  else           messagesEl.appendChild(el);
+  if (prepend) {
+    messagesEl.insertBefore(el, messagesEl.firstChild);
+  } else {
+    messagesEl.appendChild(el);
+  }
 }
 
-// 初回ロード
+// 初回ロード：直近 PAGE_SIZE 件を取得
 async function loadInitial() {
   const q = query(roomRef, orderByChild('timestamp'), limitToLast(PAGE_SIZE));
   const snap = await get(q);
@@ -157,33 +159,34 @@ async function loadInitial() {
   items.forEach(item => renderMessage(item));
   if (items.length) {
     oldestTs = items[0].timestamp;
-    newestTs = items[items.length-1].timestamp;
+    newestTs = items[items.length - 1].timestamp;
+    // 新着リスナー登録
     listenNewer();
+    // 最下部へスクロール
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 }
 
-// 新着リスニング
+// 新規メッセージのリスニング
 function listenNewer() {
   const qNew = query(roomRef, orderByChild('timestamp'), startAt(newestTs + 1));
   onChildAdded(qNew, snap => {
     const val = snap.val();
-    const item = { key: snap.key, ...val };
-    renderMessage(item);
+    const msg = { key: snap.key, ...val };
+    renderMessage(msg);
     newestTs = val.timestamp;
     messagesEl.scrollTop = messagesEl.scrollHeight;
   });
 }
 
-// 古いメッセージ読み込み
+// 古いメッセージを追加取得
 async function loadOlder() {
-  if (loadingOlder || !hasMore || oldestTs === null) return;
+  if (loadingOlder || oldestTs === null) return;
   loadingOlder = true;
-
   const qOld = query(
     roomRef,
     orderByChild('timestamp'),
-    endAt(oldestTs),
+    endAt(oldestTs - 1),
     limitToLast(PAGE_SIZE)
   );
   const snap = await get(qOld);
@@ -192,41 +195,33 @@ async function loadOlder() {
     .map(([key,val]) => ({ key, ...val }))
     .sort((a,b) => a.timestamp - b.timestamp);
 
-  // 重複を排除してレンダー
-  const newItems = items.filter(item => !loadedKeys.has(item.key));
-  newItems.forEach(item => renderMessage(item, true));
-
-  if (newItems.length) {
-    oldestTs = newItems[0].timestamp;
+  if (items.length) {
+    const previousHeight = messagesEl.scrollHeight;
+    items.forEach(item => renderMessage(item, true));
+    oldestTs = items[0].timestamp;
+    // スクロール位置をキープ
+    messagesEl.scrollTop = messagesEl.scrollHeight - previousHeight;
   }
-  // newItems 件数が PAGE_SIZE 未満ならこれ以上なし
-  if (items.length < PAGE_SIZE) {
-    hasMore = false;
-  }
-
-  // スクロール位置調整
-  //  
-  // 先に記録しておいた scrollHeight の差分だけ維持
   loadingOlder = false;
 }
 
-// スクロールでトリガー（上端 50px以内）
+// スクロールイベント：上端で古いメッセージを読み込む
 messagesEl.addEventListener('scroll', () => {
-  if (messagesEl.scrollTop <= 50) {
+  if (messagesEl.scrollTop === 0) {
     loadOlder();
   }
 });
 
-// 返信遷移
+// 返信ボタン・件数クリックの遷移設定
 messagesEl.addEventListener('click', e => {
   const tgt = e.target;
   if (tgt.classList.contains('reply-count') || tgt.classList.contains('btnReply')) {
     const id = tgt.dataset.id;
-    const repo = location.pathname.split('/')[1] || '';
-    window.location.href =
-      `${location.origin}/${repo}/command/${roomId}/thread/?id=${id}`;
+    const segments = location.pathname.split('/');
+    const repo     = segments[1] ? `/${segments[1]}` : '';
+    window.location.href = `${location.origin}${repo}/command/${roomId}/thread/?id=${id}`;
   }
 });
 
-// 実行
+// 初期化
 loadInitial();
