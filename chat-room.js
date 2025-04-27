@@ -14,20 +14,19 @@ import {
 import { auth, observeAuth, logout, app } from './auth.js';
 
 const db         = getDatabase(app);
-const messagesRef = dbRef(db, `rooms`);
+const roomRef    = dbRef(db, `rooms`);
+const PAGE_SIZE  = 20;
 
-// ページあたりの読み込み数
-const PAGE_SIZE = 40;
-
-// 現在表示中のルームID とタイムスタンプ境界
+// 現在のルームID とタイムスタンプ境界
 const parts       = location.pathname.replace(/\/$/, '').split('/');
 const roomId      = parts[parts.length - 1];
-const roomRef     = dbRef(db, `rooms/${roomId}/messages`);
+const messagesRef = dbRef(db, `rooms/${roomId}/messages`);
 let oldestTs = null;
 let newestTs = null;
 let loadingOlder = false;
+let roomList = [];
 
-// DOM 要素
+// DOM 挿入
 document.body.insertAdjacentHTML('beforeend', `
   <div id="chat-container">
     <div id="messages" class="chat-messages"></div>
@@ -68,7 +67,7 @@ imgInput.addEventListener('change', () => {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = async () => {
-    await push(roomRef, {
+    await push(messagesRef, {
       uid: auth.currentUser.uid,
       user: auth.currentUser.displayName || auth.currentUser.email,
       text: '',
@@ -91,7 +90,7 @@ btnSend.addEventListener('click', async () => {
   const text = inputEl.value.trim();
   if (!text) return;
   inputEl.value = '';
-  await push(roomRef, {
+  await push(messagesRef, {
     uid: auth.currentUser.uid,
     user: auth.currentUser.displayName || auth.currentUser.email,
     text,
@@ -100,9 +99,17 @@ btnSend.addEventListener('click', async () => {
   });
 });
 
-// メッセージ要素を作る関数
+// 利用可能なルーム一覧を取得
+async function loadRoomList() {
+  const snap = await get(roomRef);
+  const data = snap.val() || {};
+  roomList = Object.keys(data);
+}
+loadRoomList();
+
+// メッセージ描画
 function renderMessage(msgObj, prepend = false) {
-  const { key, user, text, imageBase64, timestamp, replies } = msgObj;
+  const { key, uid, user, text, imageBase64, timestamp, replies, forwardedFromRoom } = msgObj;
   const time = new Date(timestamp);
   const hh = String(time.getHours()).padStart(2, '0');
   const mm = String(time.getMinutes()).padStart(2, '0');
@@ -110,11 +117,20 @@ function renderMessage(msgObj, prepend = false) {
 
   const el = document.createElement('div');
   el.classList.add('chat-message');
-  el.innerHTML = `
+
+  // 転送元情報
+  if (forwardedFromRoom) {
+    const fwd = document.createElement('div');
+    fwd.classList.add('forward-info');
+    fwd.textContent = `🔄 転送元: ${forwardedFromRoom}`;
+    el.appendChild(fwd);
+  }
+
+  el.insertAdjacentHTML('beforeend', `
     <span class="timestamp">[${hh}:${mm}]</span>
     <span class="username">${user}</span>:
     <span class="message-text">${text}</span>
-  `;
+  `);
   if (imageBase64) {
     const img = document.createElement('img');
     img.src = imageBase64;
@@ -123,7 +139,7 @@ function renderMessage(msgObj, prepend = false) {
     el.appendChild(img);
   }
 
-  // 返信情報コンテナ
+  // 返信＆転送情報
   const info = document.createElement('div');
   info.classList.add('reply-info');
   if (replyCount > 0) {
@@ -133,11 +149,18 @@ function renderMessage(msgObj, prepend = false) {
     countSpan.textContent = `${replyCount}件の返信`;
     info.appendChild(countSpan);
   }
-  const btn = document.createElement('button');
-  btn.classList.add('btnReply');
-  btn.dataset.id = key;
-  btn.textContent = '🗨️';
-  info.appendChild(btn);
+  const replyBtn = document.createElement('button');
+  replyBtn.classList.add('btnReply');
+  replyBtn.dataset.id = key;
+  replyBtn.textContent = '🗨️';
+  info.appendChild(replyBtn);
+
+  const fwdBtn = document.createElement('button');
+  fwdBtn.classList.add('btnForward');
+  fwdBtn.dataset.id = key;
+  fwdBtn.textContent = '⤴️';
+  info.appendChild(fwdBtn);
+
   el.appendChild(info);
 
   if (prepend) {
@@ -147,9 +170,9 @@ function renderMessage(msgObj, prepend = false) {
   }
 }
 
-// 初回ロード：直近 PAGE_SIZE 件を取得
+// 初回ロード
 async function loadInitial() {
-  const q = query(roomRef, orderByChild('timestamp'), limitToLast(PAGE_SIZE));
+  const q = query(messagesRef, orderByChild('timestamp'), limitToLast(PAGE_SIZE));
   const snap = await get(q);
   const data = snap.val() || {};
   const items = Object.entries(data)
@@ -160,16 +183,14 @@ async function loadInitial() {
   if (items.length) {
     oldestTs = items[0].timestamp;
     newestTs = items[items.length - 1].timestamp;
-    // 新着リスナー登録
     listenNewer();
-    // 最下部へスクロール
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 }
 
-// 新規メッセージのリスニング
+// 新着リスニング
 function listenNewer() {
-  const qNew = query(roomRef, orderByChild('timestamp'), startAt(newestTs + 1));
+  const qNew = query(messagesRef, orderByChild('timestamp'), startAt(newestTs + 1));
   onChildAdded(qNew, snap => {
     const val = snap.val();
     const msg = { key: snap.key, ...val };
@@ -179,16 +200,11 @@ function listenNewer() {
   });
 }
 
-// 古いメッセージを追加取得
+// 古いメッセージ読み込み
 async function loadOlder() {
   if (loadingOlder || oldestTs === null) return;
   loadingOlder = true;
-  const qOld = query(
-    roomRef,
-    orderByChild('timestamp'),
-    endAt(oldestTs - 1),
-    limitToLast(PAGE_SIZE)
-  );
+  const qOld = query(messagesRef, orderByChild('timestamp'), endAt(oldestTs - 1), limitToLast(PAGE_SIZE));
   const snap = await get(qOld);
   const data = snap.val() || {};
   const items = Object.entries(data)
@@ -196,30 +212,50 @@ async function loadOlder() {
     .sort((a,b) => a.timestamp - b.timestamp);
 
   if (items.length) {
-    const previousHeight = messagesEl.scrollHeight;
+    const prevHeight = messagesEl.scrollHeight;
     items.forEach(item => renderMessage(item, true));
     oldestTs = items[0].timestamp;
-    // スクロール位置をキープ
-    messagesEl.scrollTop = messagesEl.scrollHeight - previousHeight;
+    messagesEl.scrollTop = messagesEl.scrollHeight - prevHeight;
   }
   loadingOlder = false;
 }
 
-// スクロールイベント：上端で古いメッセージを読み込む
+// スクロールで古い読み込み
 messagesEl.addEventListener('scroll', () => {
   if (messagesEl.scrollTop === 0) {
     loadOlder();
   }
 });
 
-// 返信ボタン・件数クリックの遷移設定
-messagesEl.addEventListener('click', e => {
+// メッセージ内ボタン処理
+messagesEl.addEventListener('click', async e => {
   const tgt = e.target;
-  if (tgt.classList.contains('reply-count') || tgt.classList.contains('btnReply')) {
+  // 返信
+  if (tgt.classList.contains('btnReply') || tgt.classList.contains('reply-count')) {
     const id = tgt.dataset.id;
     const segments = location.pathname.split('/');
     const repo     = segments[1] ? `/${segments[1]}` : '';
     window.location.href = `${location.origin}${repo}/command/${roomId}/thread/?id=${id}`;
+  }
+  // 転送
+  if (tgt.classList.contains('btnForward')) {
+    const id = tgt.dataset.id;
+    const origSnap = await get(dbRef(db, `rooms/${roomId}/messages/${id}`));
+    const orig    = origSnap.val();
+    const target = prompt(`転送先のルーム名を入力してください。\n利用可能: ${roomList.join(', ')}`);
+    if (!target || !roomList.includes(target)) {
+      alert('正しいルーム名を入力してください。');
+      return;
+    }
+    await push(dbRef(db, `rooms/${target}/messages`), {
+      uid:        auth.currentUser.uid,
+      user:       auth.currentUser.displayName || auth.currentUser.email,
+      text:       orig.text,
+      imageBase64: orig.imageBase64 || '',
+      forwardedFromRoom: roomId,
+      timestamp:  Date.now()
+    });
+    alert(`メッセージを ${target} へ転送しました。`);
   }
 });
 
