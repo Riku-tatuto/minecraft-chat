@@ -326,8 +326,9 @@ td div.detail {
   position: relative;
   margin-bottom: 0.5rem;
   line-height: 1.4;
-  padding-right: 2rem; /* 右端に返信ボタン用スペース確保 */
-  overflow: hidden;
+  padding: 0.25rem 2rem 0.25rem 0; /* 上下に余白をつける */
+  display: flow-root;      /* BFC を 明示的に 作る → margin collapse 防止&#8203;:contentReference[oaicite:0]{index=0} */
+  overflow: visible;       /* はみ出しを許可 → ボタンが切れなくなる&#8203;:contentReference[oaicite:1]{index=1} */
 }
 
 /* 返信情報の共通 */
@@ -404,8 +405,8 @@ td div.detail {
 /* 返信ボタン */
 .btnReply {
   position: absolute;
-  top: 0;
-  right: 1.5rem;  /* 転送ボタンと重ならないように */
+  top: 0.25rem;            /* padding-top と合わせる */
+  right: 1.5rem;
   background: none;
   border: none;
   cursor: pointer;
