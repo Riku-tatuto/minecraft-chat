@@ -391,3 +391,47 @@ td div.detail {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* 返信＆転送ボタンの共通 */
+.reply-info {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  position: relative;
+}
+
+/* 返信ボタン */
+.btnReply {
+  position: absolute;
+  top: 0;
+  right: 1.5rem;  /* 転送ボタンと重ならないように */
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  visibility: hidden;
+}
+.chat-message:hover .btnReply {
+  visibility: visible;
+}
+
+/* 転送ボタン */
+.btnForward {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  visibility: hidden;
+}
+.chat-message:hover .btnForward {
+  visibility: visible;
+}
+
+/* 転送元表示 */
+.forward-info {
+  font-size: 0.75rem;
+  color: #888;
+  margin-bottom: 0.25rem;
+}
