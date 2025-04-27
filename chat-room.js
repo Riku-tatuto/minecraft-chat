@@ -13,16 +13,23 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 import { auth, observeAuth, logout, app } from './auth.js';
 
-const db         = getDatabase(app);
+const db = getDatabase(app);
 
-// ── ここを修正: パス末尾のスラッシュや空文字を除いて必ず最後のセグメントを部屋IDとする
-const partsAll = location.pathname.split('/').filter(seg => seg !== '');
-const roomId   = partsAll[partsAll.length - 1];
+// URL の最後２セグメントを使って「カテゴリ／部屋ID」を作る
+// 例）/command/heya1/ → ['command','heya1'] → category='command', roomId='heya1'
+const parts = location.pathname
+  .split('/')
+  .filter(seg => seg !== '');
+const len = parts.length;
+const category = len >= 2 ? parts[len - 2] : 'default';
+const roomId    = parts[len - 1];
 
-const roomRef    = dbRef(db, `rooms`);
-const messagesRef= dbRef(db, `rooms/${roomId}/messages`);
-const PAGE_SIZE  = 40;
+// Firebase 上の参照もネストさせる
+// rooms/{category}/{roomId}/messages を使う
+const roomRef     = dbRef(db, `rooms/${category}`);
+const messagesRef = dbRef(db, `rooms/${category}/${roomId}/messages`);
 
+const PAGE_SIZE = 40;
 let oldestTs = null;
 let newestTs = null;
 let loadingOlder = false;
@@ -101,7 +108,7 @@ btnSend.addEventListener('click', async () => {
   });
 });
 
-// 利用可能なルーム一覧を取得
+// 利用可能なサブ部屋一覧を取得（転送先リスト用）
 async function loadRoomList() {
   const snap = await get(roomRef);
   const data = snap.val() || {};
@@ -111,7 +118,7 @@ loadRoomList();
 
 // メッセージ描画
 function renderMessage(msgObj, prepend = false) {
-  const { key, uid, user, text, imageBase64, timestamp, replies, forwardedFromRoom } = msgObj;
+  const { key, user, text, imageBase64, timestamp, replies, forwardedFromRoom } = msgObj;
   const time = new Date(timestamp);
   const hh = String(time.getHours()).padStart(2, '0');
   const mm = String(time.getMinutes()).padStart(2, '0');
@@ -140,6 +147,7 @@ function renderMessage(msgObj, prepend = false) {
     el.appendChild(img);
   }
 
+  // 返信・転送ボタン
   const info = document.createElement('div');
   info.classList.add('reply-info');
   if (replyCount > 0) {
@@ -154,20 +162,15 @@ function renderMessage(msgObj, prepend = false) {
   replyBtn.dataset.id = key;
   replyBtn.textContent = '🗨️';
   info.appendChild(replyBtn);
-
   const fwdBtn = document.createElement('button');
   fwdBtn.classList.add('btnForward');
   fwdBtn.dataset.id = key;
   fwdBtn.textContent = '⤴️';
   info.appendChild(fwdBtn);
-
   el.appendChild(info);
 
-  if (prepend) {
-    messagesEl.insertBefore(el, messagesEl.firstChild);
-  } else {
-    messagesEl.appendChild(el);
-  }
+  if (prepend) messagesEl.insertBefore(el, messagesEl.firstChild);
+  else        messagesEl.appendChild(el);
 }
 
 // 初回ロード
@@ -178,7 +181,6 @@ async function loadInitial() {
   const items = Object.entries(data)
     .map(([key,val]) => ({ key, ...val }))
     .sort((a,b) => a.timestamp - b.timestamp);
-
   items.forEach(item => renderMessage(item));
   if (items.length) {
     oldestTs = items[0].timestamp;
@@ -193,8 +195,7 @@ function listenNewer() {
   const qNew = query(messagesRef, orderByChild('timestamp'), startAt(newestTs + 1));
   onChildAdded(qNew, snap => {
     const val = snap.val();
-    const msg = { key: snap.key, ...val };
-    renderMessage(msg);
+    renderMessage({ key: snap.key, ...val });
     newestTs = val.timestamp;
     messagesEl.scrollTop = messagesEl.scrollHeight;
   });
@@ -210,7 +211,6 @@ async function loadOlder() {
   const items = Object.entries(data)
     .map(([key,val]) => ({ key, ...val }))
     .sort((a,b) => a.timestamp - b.timestamp);
-
   if (items.length) {
     const prevHeight = messagesEl.scrollHeight;
     items.forEach(item => renderMessage(item, true));
@@ -219,35 +219,35 @@ async function loadOlder() {
   }
   loadingOlder = false;
 }
-
 messagesEl.addEventListener('scroll', () => {
-  if (messagesEl.scrollTop === 0) {
-    loadOlder();
-  }
+  if (messagesEl.scrollTop === 0) loadOlder();
 });
 
+// 返信・転送のクリック処理
 messagesEl.addEventListener('click', async e => {
   const tgt = e.target;
   if (tgt.classList.contains('btnReply') || tgt.classList.contains('reply-count')) {
     const id = tgt.dataset.id;
-    window.location.href = `${location.origin}/command/${roomId}/thread/?id=${id}`;
+    window.location.href = `${location.origin}/${category}/${roomId}/thread/?id=${id}`;
   }
   if (tgt.classList.contains('btnForward')) {
     const id = tgt.dataset.id;
-    const origSnap = await get(dbRef(db, `rooms/${roomId}/messages/${id}`));
-    const orig    = origSnap.val();
-    const target = prompt(`転送先のルーム名を入力してください。\n利用可能: ${roomList.join(', ')}`);
+    const origSnap = await get(dbRef(db, `rooms/${category}/${roomId}/messages/${id}`));
+    const orig = origSnap.val();
+    const target = prompt(
+      `転送先のルームを入力してください。\n利用可能: ${roomList.join(', ')}`
+    );
     if (!target || !roomList.includes(target)) {
       alert('正しいルーム名を入力してください。');
       return;
     }
-    await push(dbRef(db, `rooms/${target}/messages`), {
-      uid:        auth.currentUser.uid,
-      user:       auth.currentUser.displayName || auth.currentUser.email,
-      text:       orig.text,
+    await push(dbRef(db, `rooms/${category}/${target}/messages`), {
+      uid: auth.currentUser.uid,
+      user: auth.currentUser.displayName || auth.currentUser.email,
+      text: orig.text,
       imageBase64: orig.imageBase64 || '',
       forwardedFromRoom: roomId,
-      timestamp:  Date.now()
+      timestamp: Date.now()
     });
     alert(`メッセージを ${target} へ転送しました。`);
   }
