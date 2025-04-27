@@ -56,6 +56,10 @@ mainEl.insertAdjacentHTML('afterend', `
 const replyInput   = document.getElementById('replyInput');
 const btnReplySend = document.getElementById('btnReplySend');
 
+let isComposing = false;
+replyInput.addEventListener('compositionstart', () => { isComposing = true; });
+replyInput.addEventListener('compositionend',   () => { isComposing = false; });
+
 // 認証で有効化
 observeAuth(user => {
   const ok = user && user.emailVerified;
@@ -66,9 +70,9 @@ observeAuth(user => {
     : 'ログインすると返信できます';
 });
 
-// Enter で送信
+// Enter で送信（IME中は無視）
 replyInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !btnReplySend.disabled) {
+  if (e.key === 'Enter' && !isComposing && !btnReplySend.disabled) {
     e.preventDefault();
     btnReplySend.click();
   }
