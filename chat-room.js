@@ -34,7 +34,6 @@ let roomList = [];
 // ── DOM 挿入 ──
 document.body.insertAdjacentHTML('beforeend', `
   <div id="chat-container">
-    <button id="btnLogout">ログアウト</button>
     <h2>ルーム: ${category} / ${roomId}</h2>
     <div id="messages" class="chat-messages"></div>
     <div class="chat-input-area">
@@ -50,10 +49,6 @@ const imgInput   = document.getElementById('imgInput');
 const btnImg     = document.getElementById('btnImg');
 const inputEl    = document.getElementById('msgInput');
 const btnSend    = document.getElementById('btnSend');
-const btnLogout  = document.getElementById('btnLogout');
-
-// ログアウトボタン
-btnLogout.addEventListener('click', () => logout());
 
 // ── IME 判定 ──
 let isComposing = false;
