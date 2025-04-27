@@ -327,6 +327,7 @@ td div.detail {
   margin-bottom: 0.5rem;
   line-height: 1.4;
   padding-right: 2rem; /* 右端に返信ボタン用スペース確保 */
+  overflow: hidden;
 }
 
 /* 返信情報の共通 */
