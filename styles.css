@@ -305,3 +305,38 @@ td div.detail {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.chat-message {
+  position: relative;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+  padding: 0.25rem 2rem 0.25rem 0; /* 上下に余白をつける */
+  display: flow-root;      /* BFC を 明示的に 作る → margin collapse 防止&#8203;:contentReference[oaicite:0]{index=0} */
+  overflow: visible;       /* はみ出しを許可 → ボタンが切れなくなる&#8203;:contentReference[oaicite:1]{index=1} */
+}
+
+ /* 返信＆転送ボタン */
+.btnReply {
+  position: absolute;
+  top: 0.25rem;            /* padding-top と合わせる */
+  right: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  visibility: hidden;
+}
+.chat-message:hover .btnReply {
+  visibility: visible;
+}
+
+.btnForward {
+  position: absolute;
+  top: 0.25rem;            /* padding-top と合わせる */
+  right: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  visibility: hidden;
+}
