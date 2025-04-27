@@ -14,13 +14,15 @@ import {
 import { auth, observeAuth, logout, app } from './auth.js';
 
 const db         = getDatabase(app);
+
+// ── ここを修正: パス末尾のスラッシュや空文字を除いて必ず最後のセグメントを部屋IDとする
+const partsAll = location.pathname.split('/').filter(seg => seg !== '');
+const roomId   = partsAll[partsAll.length - 1];
+
 const roomRef    = dbRef(db, `rooms`);
+const messagesRef= dbRef(db, `rooms/${roomId}/messages`);
 const PAGE_SIZE  = 40;
 
-// 現在のルームID とタイムスタンプ境界
-const parts       = location.pathname.replace(/\/$/, '').split('/');
-const roomId      = parts[parts.length - 1];
-const messagesRef = dbRef(db, `rooms/${roomId}/messages`);
 let oldestTs = null;
 let newestTs = null;
 let loadingOlder = false;
@@ -118,7 +120,6 @@ function renderMessage(msgObj, prepend = false) {
   const el = document.createElement('div');
   el.classList.add('chat-message');
 
-  // 転送元情報
   if (forwardedFromRoom) {
     const fwd = document.createElement('div');
     fwd.classList.add('forward-info');
@@ -139,7 +140,6 @@ function renderMessage(msgObj, prepend = false) {
     el.appendChild(img);
   }
 
-  // 返信＆転送情報
   const info = document.createElement('div');
   info.classList.add('reply-info');
   if (replyCount > 0) {
@@ -220,24 +220,18 @@ async function loadOlder() {
   loadingOlder = false;
 }
 
-// スクロールで古い読み込み
 messagesEl.addEventListener('scroll', () => {
   if (messagesEl.scrollTop === 0) {
     loadOlder();
   }
 });
 
-// メッセージ内ボタン処理
 messagesEl.addEventListener('click', async e => {
   const tgt = e.target;
-  // 返信
   if (tgt.classList.contains('btnReply') || tgt.classList.contains('reply-count')) {
     const id = tgt.dataset.id;
-    const segments = location.pathname.split('/');
-    const repo     = segments[1] ? `/${segments[1]}` : '';
-    window.location.href = `${location.origin}${repo}/command/${roomId}/thread/?id=${id}`;
+    window.location.href = `${location.origin}/command/${roomId}/thread/?id=${id}`;
   }
-  // 転送
   if (tgt.classList.contains('btnForward')) {
     const id = tgt.dataset.id;
     const origSnap = await get(dbRef(db, `rooms/${roomId}/messages/${id}`));
