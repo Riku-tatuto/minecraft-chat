@@ -7,6 +7,8 @@ import {
   query,
   orderByChild,
   limitToLast,
+  startAt,      // ← 追加
+  endAt,        // ← 追加
   onChildAdded
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 import { auth, observeAuth, app } from './auth.js';
@@ -24,7 +26,8 @@ const PAGE_SIZE = 40;
 let oldestTs = null, newestTs = null, loadingOlder = false;
 let roomList = [];
 
-// — DOM 構築 —
+// — DOM 挿入 —
+// forwardMenu は chat-container の外に出す
 document.body.insertAdjacentHTML('beforeend', `
   <div id="chat-container">
     <h2>ルーム: ${category} / ${roomId}</h2>
@@ -35,16 +38,15 @@ document.body.insertAdjacentHTML('beforeend', `
       <input id="msgInput" type="text" placeholder="メッセージを入力..." disabled />
       <button id="btnSend" disabled>送信</button>
     </div>
-    <!-- 転送先選択メニュー -->
-    <div id="forwardMenu" class="forward-menu" style="display:none;"></div>
   </div>
+  <div id="forwardMenu" class="forward-menu" style="display:none;"></div>
 `);
-const messagesEl = document.getElementById('messages');
+const messagesEl  = document.getElementById('messages');
 const forwardMenu = document.getElementById('forwardMenu');
-const imgInput   = document.getElementById('imgInput');
-const btnImg     = document.getElementById('btnImg');
-const inputEl    = document.getElementById('msgInput');
-const btnSend    = document.getElementById('btnSend');
+const imgInput    = document.getElementById('imgInput');
+const btnImg      = document.getElementById('btnImg');
+const inputEl     = document.getElementById('msgInput');
+const btnSend     = document.getElementById('btnSend');
 
 // IME 判定
 let isComposing = false;
@@ -107,7 +109,6 @@ async function loadRoomList() {
     }
   }
 }
-loadRoomList();
 
 // メッセージ描画
 function renderMessage(msgObj, prepend=false) {
@@ -129,30 +130,29 @@ function renderMessage(msgObj, prepend=false) {
   el.classList.add('chat-message');
 
   if (forwardedFromRoom) {
-    // 転送ヘッダー
     const hdr = document.createElement('div');
     hdr.classList.add('forwarded-header');
     hdr.textContent = `${user}  ${fmt(timestamp)}`;
     el.appendChild(hdr);
-    // 転送本文
+
     const orig = document.createElement('div');
     orig.classList.add('forwarded-content');
     orig.textContent = text;
     el.appendChild(orig);
-    // 転送元行
+
     const ftr = document.createElement('div');
     ftr.classList.add('forwarded-footer');
     ftr.textContent = `転送元: ${forwardedCategory} / ${forwardedFromRoom}  ${fmt(forwardedAt)}`;
     el.appendChild(ftr);
+
   } else {
-    // 通常ヘッダー（左揃え）
     const header = document.createElement('div');
     header.classList.add('message-header');
     header.innerHTML =
       `<span class="username">${user}</span> ` +
       `<span class="timestamp">${fmt(timestamp)}</span>`;
     el.appendChild(header);
-    // 本文
+
     const body = document.createElement('div');
     body.classList.add('message-text');
     body.textContent = text;
@@ -166,7 +166,6 @@ function renderMessage(msgObj, prepend=false) {
     el.appendChild(img);
   }
 
-  // 返信・転送ボタン
   const info = document.createElement('div');
   info.classList.add('reply-info');
   const replyBtn = document.createElement('button');
@@ -181,7 +180,13 @@ function renderMessage(msgObj, prepend=false) {
   else        messagesEl.appendChild(el);
 }
 
-// 初回ロード／新着／古い読み込み
+// 初期化：ルーム一覧取得→メッセージ読み込み
+async function init() {
+  await loadRoomList();
+  loadInitial();
+}
+init();
+
 async function loadInitial() {
   const q = query(messagesRef, orderByChild('timestamp'), limitToLast(PAGE_SIZE));
   const snap = await get(q);
@@ -196,6 +201,7 @@ async function loadInitial() {
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 }
+
 function listenNewer() {
   const q2 = query(messagesRef, orderByChild('timestamp'), startAt(newestTs+1));
   onChildAdded(q2, snap=>{
@@ -204,6 +210,7 @@ function listenNewer() {
     messagesEl.scrollTop = messagesEl.scrollHeight;
   });
 }
+
 async function loadOlder() {
   if (loadingOlder||oldestTs===null) return;
   loadingOlder=true;
@@ -222,24 +229,21 @@ async function loadOlder() {
 }
 messagesEl.addEventListener('scroll',()=>{ if(messagesEl.scrollTop===0) loadOlder(); });
 
-// — クリック処理 —  
+// クリック処理：返信／転送
 messagesEl.addEventListener('click', e => {
   const tgt = e.target;
   if (tgt.classList.contains('btnReply')) {
     window.location.href = `${location.origin}${repo}/${category}/${roomId}/thread/?id=${tgt.dataset.id}`;
   }
   if (tgt.classList.contains('btnForward')) {
-    // 独自UI表示
     showForwardMenu(tgt, tgt.dataset.id);
   }
 });
 
-// 転送メニュー表示・選択処理
+// 独自転送メニュー
 function showForwardMenu(button, messageId) {
-  // メニュー要素をクリア＆表示
   forwardMenu.innerHTML = '';
   forwardMenu.style.display = 'block';
-  // 各ルームをリスト化
   roomList.forEach((r,i) => {
     const item = document.createElement('div');
     item.classList.add('forward-item');
@@ -247,32 +251,32 @@ function showForwardMenu(button, messageId) {
     item.dataset.idx = i;
     forwardMenu.appendChild(item);
   });
-  // メニュー位置調整
+  // 表示位置を画面基準で調整
   const rect = button.getBoundingClientRect();
+  forwardMenu.style.position = 'absolute';
   forwardMenu.style.top  = `${rect.bottom + window.scrollY}px`;
-  forwardMenu.style.left = `${rect.left + window.scrollX}px`;
-
-  // クリックで転送実行
-  forwardMenu.onclick = async e => {
-    const idx = e.target.dataset.idx;
-    if (idx == null) return;
-    const tgtRoom = roomList[parseInt(idx,10)];
-    const origSnap = await get(dbRef(db, `rooms/${category}/${roomId}/messages/${messageId}`));
-    const orig = origSnap.val();
-    await push(dbRef(db, `rooms/${tgtRoom.category}/${tgtRoom.id}/messages`), {
-      uid: auth.currentUser.uid,
-      user: auth.currentUser.displayName||auth.currentUser.email,
-      text: orig.text,
-      imageBase64: orig.imageBase64||'',
-      forwardedFromRoom: roomId,
-      forwardedCategory: category,
-      forwardedAt: Date.now(),
-      timestamp: Date.now()
-    });
-    forwardMenu.style.display = 'none';
-    alert(`メッセージを「${tgtRoom.label}」へ転送しました`);
-  };
+  forwardMenu.style.left = `${rect.left   + window.scrollX}px`;
 }
+
+// メニュー選択で転送
+forwardMenu.addEventListener('click', async e => {
+  const idx = e.target.dataset.idx;
+  if (idx == null) return;
+  const tgtRoom = roomList[parseInt(idx,10)];
+  const origSnap = await get(dbRef(db, `rooms/${category}/${roomId}/messages/${e.target.dataset.id}`));
+  const orig = origSnap.val();
+  await push(dbRef(db, `rooms/${tgtRoom.category}/${tgtRoom.id}/messages`), {
+    uid: auth.currentUser.uid,
+    user: auth.currentUser.displayName||auth.currentUser.email,
+    text: orig.text,
+    imageBase64: orig.imageBase64||'',
+    forwardedFromRoom: roomId,
+    forwardedCategory: category,
+    forwardedAt: Date.now(),
+    timestamp: Date.now()
+  });
+  forwardMenu.style.display = 'none';
+});
 
 // 画面クリックでメニューを閉じる
 document.addEventListener('click', e => {
@@ -280,6 +284,3 @@ document.addEventListener('click', e => {
     forwardMenu.style.display = 'none';
   }
 });
-
-// 起動
-loadInitial();
