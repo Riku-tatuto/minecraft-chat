@@ -438,30 +438,3 @@ td div.detail {
   color: #888;
   margin-bottom: 0.25rem;
 }
-
-/* 各メッセージをインライン・フレックス化 */
-.chat-message {
-  display: inline-flex;          /* テキストとボタンを同じ行に並べる&#8203;:contentReference[oaicite:0]{index=0} */
-  align-items: center;
-  gap: 0.5rem;                   /* テキスト⇔ボタン間に余白 */
-  margin-bottom: 0.5rem;
-  padding: 0.25rem 0.5rem;
-  background: #f9f9f9;
-  border-radius: 4px;
-}
-
-/* 返信・転送ボタンは常にテキスト横に */
-.reply-info {
-  display: inline-flex;
-  gap: 0.25rem;
-}
-
-.btnReply,
-.btnForward {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  line-height: 1;
-  padding: 0;
-}
