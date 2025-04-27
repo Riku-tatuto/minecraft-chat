@@ -61,7 +61,6 @@ observeAuth(user => {
   btnImg.disabled    = !ok;
   inputEl.disabled   = !ok;
   btnSend.disabled   = !ok;
-  btnLogout.disabled = !user;
   inputEl.placeholder = ok
     ? 'メッセージを入力...'
     : 'ログインすると送信できます';
