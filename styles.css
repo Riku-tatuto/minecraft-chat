@@ -1,195 +1,56 @@
 /* styles.css */
 
-/* ── 画面全体をフル活用 ── */
+/* ── リセット＆全体設定 ── */
 html, body {
   height: 100%;
   margin: 0;
-  overflow: hidden; /* ページ全体ではスクロールさせない */
 }
-
-/* ── 共通スタイル ── */
 body {
   font-family: 'Arial', sans-serif;
   background-color: #f4f4f4;
   color: #333;
 }
 
-h1, h2 {
-  text-align: center;
-}
-
 /* ── ナビゲーションバー ── */
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #4C97FE;
-  color: white;
-  padding: 10px 20px;
-  height: 60px;  /* チャット領域の top として参照 */
-  box-sizing: border-box;
-}
-
-.navbar-logo {
-  height: 60px;
-  width: auto;
-}
-
-.navbar-menu .nav-link {
-  margin-left: 1rem;
-  color: white;
-  text-decoration: none;
-  cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 4px;
-}
-.navbar-menu .nav-link:hover,
-.navbar-menu .nav-link.active {
-  background: #4180D8;
-}
-
-/* ── その他ページ用（省略） ── */
-/* ここに既存の .container や .thread-btn などのルールをそのまま残してください */
-
-/* ── チャットページ専用 ── */
-#chat-container {
-  position: absolute;
-  top: 60px;    /* .navbar の高さ */
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
-}
-
-.chat-messages {
-  flex: 1;
-  padding: 1rem;
-  overflow-y: auto;
-  background: #f4f4f4;
-}
-
-.chat-message {
-  margin-bottom: 0.5rem;
-  line-height: 1.4;
-}
-.chat-message .timestamp {
-  color: #888;
-  font-size: 0.75rem;
-  margin-right: 0.5rem;
-}
-.chat-message .username {
-  font-weight: bold;
-  margin-right: 0.3rem;
-}
-.chat-message .message-text {
-  word-break: break-word;
-}
-
-.chat-input-area {
-  display: flex;
-  border-top: 1px solid #ddd;
-  padding: 0.5rem;
-  background: #fff;
-}
-.chat-input-area input {
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  outline: none;
-}
-.chat-input-area button {
-  margin-left: 0.5rem;
-  padding: 0 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  background: #4C97FE;
-  color: #fff;
-}
-.chat-input-area button:disabled {
-  background: #aaa;
-  cursor: not-allowed;
-}
-
-/* styles.css */
-
-/* 画面全体をフル活用するためのリセット */
-html, body {
-  height: 100%;
-  margin: 0;
-}
-
-/* 共通 */
-body {
-  font-family: 'Arial', sans-serif;
-  background-color: #f4f4f4;
-  color: #333;
-}
-
-h1, h2 {
-  text-align: center;
-}
-
-/* ── ナビゲーションバー ── */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #4C97FE;
-  color: white;
-  padding: 10px 20px;
-  height: 60px; /* チャット領域計算用 */
-}
-
-.navbar-logo {
-  height: 60px;
-  width: auto;
-}
-
-.navbar-menu .nav-link {
-  margin-left: 1rem;
-  color: white;
-  text-decoration: none;
-  cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 4px;
-}
-
-.navbar-menu .nav-link:hover,
-.navbar-menu .nav-link.active {
-  background: #4180D8;
-  text-decoration: none;
-}
-
-/* ── レイアウト共通エリア ── */
-main.content {
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 60px); /* ナビバー 60px を除いた高さ */
-  margin: 0;   /* サイドバー用の margin をリセット */
-  padding: 0;  /* 必要なら個別ページで余白を補う */
-}
-
-/* ── サイドバー（必要なら） ── */
-.sidebar {
   position: fixed;
-  top: 60px;
+  top: 0;
   left: 0;
-  width: 200px;
-  height: calc(100vh - 60px);
-  background: #007BFF;
+  width: 100%;
+  height: 60px;            /* チャット領域との兼ね合い */
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  background: #4C97FE;
   color: white;
+  padding: 0 20px;
+  z-index: 100;            /* 常に最前面に */
+}
+.navbar-logo {
+  height: 60px;
+  width: auto;
+}
+.navbar-menu .nav-link {
+  margin-left: 1rem;
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 4px;
+}
+.navbar-menu .nav-link:hover,
+.navbar-menu .nav-link.active {
+  background: #4180D8;
+  text-decoration: none;
 }
 
-/* ── メインページ用（チャットページは上の main.content で上書きされます） ── */
-.content {
-  margin-left: 200px;
-  padding: 70px 20px 20px;
+/* ── メインコンテンツ（非チャットページ） ── */
+main.content {
+  padding-top: 60px;       /* ナビバー高さ分を空ける */
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 60px);
+  /* もしサイドバーを使うなら margin-left, padding などを個別ページで調整 */
 }
 
 /* ── 共通フォーム系 ── */
@@ -202,7 +63,6 @@ main.content {
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
-
 .input-group {
   margin-bottom: 15px;
 }
@@ -306,7 +166,6 @@ td div.detail {
   margin-bottom: 0.75rem;
   font-size: 1.4em;
   color: #333;
-  text-align: left;
 }
 .thread-list {
   display: flex;
@@ -330,14 +189,22 @@ td div.detail {
   background-color: #f0f0f0;
 }
 
-/* ── チャット画面 ── */
+/* ── チャット画面専用 ── */
+/* chat-room.js で body に直接追加される #chat-container を固定配置 */
 #chat-container {
+  position: fixed;
+  top: 60px;    /* ナビバーの下 */
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
-  height: 100%; /* main.content で計算された高さをそのまま使う */
+  background: #fff;
   overflow: hidden;
+  z-index: 1;
 }
 
+/* メッセージ表示領域 */
 .chat-messages {
   flex: 1;
   padding: 1rem;
@@ -345,40 +212,37 @@ td div.detail {
   background: #f4f4f4;
 }
 
+/* 各メッセージ */
 .chat-message {
   margin-bottom: 0.5rem;
   line-height: 1.4;
 }
-
 .chat-message .timestamp {
   color: #888;
   font-size: 0.75rem;
   margin-right: 0.5rem;
 }
-
 .chat-message .username {
   font-weight: bold;
   margin-right: 0.3rem;
 }
-
 .chat-message .message-text {
   word-break: break-word;
 }
 
+/* 入力エリア */
 .chat-input-area {
   display: flex;
   border-top: 1px solid #ddd;
   padding: 0.5rem;
   background: #fff;
 }
-
 .chat-input-area input {
   flex: 1;
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
 .chat-input-area button {
   margin-left: 0.5rem;
   padding: 0 1rem;
@@ -386,7 +250,6 @@ td div.detail {
   border-radius: 4px;
   cursor: pointer;
 }
-
 .chat-input-area button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
