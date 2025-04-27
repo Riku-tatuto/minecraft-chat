@@ -114,12 +114,24 @@ onValue(dbRef(db, `rooms/${roomId}/messages`), snapshot => {
       el.appendChild(img);
     }
 
+    // 返信情報
     const info = document.createElement('div');
     info.classList.add('reply-info');
-    info.innerHTML = `
-      <span class="reply-count" data-id="${key}">${replyCount}件の返信</span>
-      <button class="btnReply" data-id="${key}">🗨️ 返信</button>
-    `;
+    // 返信件数（0件は表示しない）
+    if (replyCount > 0) {
+      const countSpan = document.createElement('span');
+      countSpan.classList.add('reply-count');
+      countSpan.dataset.id = key;
+      countSpan.textContent = `${replyCount}件の返信`;
+      info.appendChild(countSpan);
+    }
+    // 返信ボタン（常に存在）
+    const btn = document.createElement('button');
+    btn.classList.add('btnReply');
+    btn.dataset.id = key;
+    btn.textContent = '🗨️';
+    info.appendChild(btn);
+
     el.appendChild(info);
     messagesEl.appendChild(el);
   });
