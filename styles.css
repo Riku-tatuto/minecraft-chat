@@ -342,11 +342,17 @@ td div.detail {
 }
 
 .chat-message {
-  display: inline-flex;           /* テキストとボタンを同じ行に並べる&#8203;:contentReference[oaicite:1]{index=1} */
+  display: flex;            /* フレックスコンテナ化 */
+  flex-direction: column;   /* 子要素（.chat-message）を縦に並べる  */
+  gap: 0.5rem;              /* 各メッセージ間のすきま */
+}
+.chat-message {
+  display: flex;            /* 行内ではなくブロックレベルのフレックスに  */
+  flex-direction: row;       /* ユーザー名・本文・ボタンを横並びに */
   align-items: center;
-  gap: 0.5rem;                    /* 要素間のすきま&#8203;:contentReference[oaicite:2]{index=2} */
-  margin-bottom: 0.5rem;
-  padding: 0.25rem 0.5rem;
+  gap: 0.5rem;              /* 要素間のすきま */
+  width: 100%;              /* 横幅いっぱい */
+  box-sizing: border-box;   /* padding を含めて幅100％ */
 }
 
 .reply-info {
