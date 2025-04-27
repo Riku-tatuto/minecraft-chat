@@ -395,7 +395,8 @@ td div.detail {
 
 /* 返信＆転送ボタンの共通 */
 .reply-info {
-  margin-top: 0.25rem;
+  margin-top: 0;
+  padding-top: 0.25rem;
   font-size: 0.75rem;
   position: relative;
 }
