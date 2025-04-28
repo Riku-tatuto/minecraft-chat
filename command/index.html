@@ -9,20 +9,31 @@ permalink: /command/
 <section class="thread-section">
   <h2 class="thread-section-title">スレッド一覧</h2>
   <div class="thread-list">
-    <!-- 「部屋1」「部屋2」を追加 -->
     <a href="{{ '/command/heya1/' | relative_url }}" class="thread-btn">
-      部屋1 <span class="count">(0)</span>
+      部屋1 <span class="count">(...)</span>
     </a>
     <a href="{{ '/command/heya2/' | relative_url }}" class="thread-btn">
-      部屋2 <span class="count">(0)</span>
+      部屋2 <span class="count">(...)</span>
     </a>
   </div>
 </section>
 
-<div id="content"></div>
-
 <script type="module">
-  import { auth, observeAuth, logout } from '../auth.js';
+  import { getDatabase, ref as dbRef, get } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 
-  // …observeAuth のコードはそのまま
+  // ルームごとのメッセージ数を取得して表示
+  async function updateCounts() {
+    const db = getDatabase();
+    document.querySelectorAll('.thread-btn').forEach(async btn => {
+      const href = btn.getAttribute('href');      // e.g. "/command/heya1/"
+      const parts = href.split('/').filter(Boolean);
+      const category = parts[0], roomId = parts[1];
+      const snap = await get(dbRef(db, `rooms/${category}/${roomId}/messages`));
+      const data = snap.val() || {};
+      const count = Object.keys(data).length;
+      btn.querySelector('.count').textContent = `(${count})`;
+    });
+  }
+
+  updateCounts();
 </script>
