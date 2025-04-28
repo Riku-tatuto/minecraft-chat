@@ -662,7 +662,7 @@ td div.detail {
   outline: none;
   padding: 0.5rem;
   border-radius: 4px;
-  color: #fff;               /* テキスト色は白など */
+  color: #000;               /* テキスト色は白など */
 }
 
 /* アイコンボタンも透過＆枠なし */
