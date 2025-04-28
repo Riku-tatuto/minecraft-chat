@@ -1,3 +1,4 @@
+あなた:
 /* ── リセット＆全体設定 ── */
 html, body {
   height: 100%;
@@ -15,14 +16,14 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  height: 60px;
+  height: 60px;            /* チャット領域との兼ね合い */
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: #4C97FE;
   color: white;
   padding: 0 20px;
-  z-index: 100;
+  z-index: 100;            /* 常に最前面に */
 }
 .navbar-logo {
   height: 60px;
@@ -44,10 +45,11 @@ body {
 
 /* ── メインコンテンツ（非チャットページ） ── */
 main.content {
-  padding-top: 60px;
+  padding-top: 60px;       /* ナビバー高さ分を空ける */
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 60px);
+  /* もしサイドバーを使うなら margin-left, padding などを個別ページで調整 */
 }
 
 /* ── 共通フォーム系 ── */
@@ -157,7 +159,7 @@ td div.detail {
 /* ── スレッド風ボタンエリア ── */
 .thread-section {
   margin-top: 2rem;
-  text-align: left;
+  text-align: left; 
 }
 .thread-section-title {
   margin-bottom: 0.75rem;
@@ -189,7 +191,7 @@ td div.detail {
 /* ── チャット画面専用 ── */
 #chat-container {
   position: fixed;
-  top: 60px;
+  top: 60px;    /* ナビバーの下 */
   left: 0;
   right: 0;
   bottom: 0;
@@ -200,13 +202,13 @@ td div.detail {
   z-index: 1;
 }
 .chat-messages {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  flex: 1;
   padding: 1rem;
   overflow-y: auto;
   background: #f4f4f4;
 }
+
+/* ── スレッドページのメインメッセージ／返信 ── */
 .chat-thread-main {
   padding: 1rem;
   border-bottom: 1px solid #ddd;
@@ -216,8 +218,70 @@ td div.detail {
   flex: 1;
   padding: 1rem;
   background: #fff;
-  max-height: calc(100vh - 200px);
+  max-height: calc(100vh - 200px); /* 適宜調整 */
   overflow-y: auto;
+}
+#reply-input {
+  border-top: 1px solid #ddd;
+  padding: 0.5rem;
+  background: #fff;
+}
+
+/* ── styles.css のチャット周りに追記／置き換え ── */
+.chat-message {
+  position: relative;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+  padding-right: 2rem; /* 右端にボタン用スペース確保 */
+  overflow: hidden;
+}
+.reply-info {
+  margin-top: 0.25rem;
+  padding-top: 0.25rem;
+  font-size: 0.75rem;
+  position: relative;
+}
+.reply-count {
+  color: #555;
+  cursor: pointer;
+}
+.btnReply {
+  position: absolute;
+  top: 0;
+  right: 1.5rem;  /* 転送ボタンと重ならないように */
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  visibility: hidden;
+}
+.chat-message:hover .btnReply {
+  visibility: visible;
+}
+.btnForward {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  visibility: hidden;
+}
+.chat-message:hover .btnForward {
+  visibility: visible;
+}
+.forward-info {
+  font-size: 0.75rem;
+  color: #888;
+  margin-bottom: 0.25rem;
+}
+.chat-image {
+  display: block;
+  max-width: 200px;
+  max-height: 200px;
+  margin-top: 0.5rem;
+  border-radius: 4px;
 }
 .chat-input-area {
   display: flex;
@@ -243,49 +307,291 @@ td div.detail {
   cursor: not-allowed;
 }
 
-/* ── メッセージ＆ボタン ── */
 .chat-message {
   position: relative;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+  padding: 0.25rem 2rem 0.25rem 0; /* 上下に余白をつける */
+  display: flow-root;      /* BFC を 明示的に 作る → margin collapse 防止&#8203;:contentReference[oaicite:0]{index=0} */
+  overflow: visible;       /* はみ出しを許可 → ボタンが切れなくなる&#8203;:contentReference[oaicite:1]{index=1} */
+}
+
+ /* 返信＆転送ボタン */
+.btnReply {
+  position: absolute;
+  top: 0.25rem;            /* padding-top と合わせる */
+  right: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  visibility: hidden;
+}
+.chat-message:hover .btnReply {
+  visibility: visible;
+}
+
+.btnForward {
+  position: absolute;
+  top: 0.25rem;            /* padding-top と合わせる */
+  right: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  visibility: hidden;
+}
+
+.chat-message {
+  display: flex;            /* フレックスコンテナ化 */
+  flex-direction: column;   /* 子要素（.chat-message）を縦に並べる  */
+  gap: 0.5rem;              /* 各メッセージ間のすきま */
+}
+.chat-message {
+  display: flex;            /* 行内ではなくブロックレベルのフレックスに  */
+  flex-direction: row;       /* ユーザー名・本文・ボタンを横並びに */
+  align-items: center;
+  gap: 0.5rem;              /* 要素間のすきま */
+  width: 100%;              /* 横幅いっぱい */
+  box-sizing: border-box;   /* padding を含めて幅100％ */
+}
+
+.reply-info {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.btnReply,
+.btnForward {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+}
+
+/* １）メッセージ全体にホバー枠を付ける */
+.chat-message {
+  position: relative;               /* 絶対配置ボタン用に親を基準に */
+  padding: 0.5rem;                  /* 内側余白 */
+  border-radius: 6px;               /* 角丸 */
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+/* ホバー時に背景とシャドウを強調 */
+.chat-message:hover {
+  background: #f0f0f0;              /* Discordライクな淡背景 */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15); /* 軽い影で浮き上がり感&#8203;:contentReference[oaicite:0]{index=0} */
+}
+
+/* ２）返信・転送ボタン群をホバー時だけ見せる */
+.reply-info {
+  position: absolute;
+  top: 0.25rem; right: 0.25rem;     /* メッセージ右上に重ねる */
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
+  gap: 0.25rem;
+  opacity: 0;                       /* 通常は透明 */
+  pointer-events: none;             /* 透明時はクリック無効 */
+  transition: opacity 0.2s;
+}
+
+/* ホバー時にボタンをフェードイン */
+.chat-message:hover .reply-info {
+  opacity: 1;
+  pointer-events: auto;             /* ボタンが押せるように戻す */
+}
+
+/* ボタン自身のスタイル */
+.btnReply, .btnForward {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.2rem;
+  border-radius: 4px;
+}
+.btnReply:hover, .btnForward:hover {
+  background: rgba(0,0,0,0.05);      /* ホバー時の背景変化 */
+}
+
+/* 転送ヘッダー */
+.forwarded-header {
+  font-size: 0.85rem;
+  color: #555;
+  background: #eef;
+  padding: 0.25rem;
+  border-left: 3px solid #88f;
+  margin-bottom: 0.25rem;
+  white-space: pre-wrap;  /* 改行を反映 */
+}
+
+/* オリジナル淡色部分 */
+.forwarded-content {
+  opacity: 0.6;
+  padding: 0.25rem 0.5rem;
+  background: #f5f5f5;
+  border-radius: 4px;
+  margin-bottom: 0.25rem;
+}
+
+/* 転送フッター */
+.forwarded-footer {
+  font-size: 0.75rem;
+  color: #777;
+  text-align: right;
+  margin-bottom: 0.5rem;
+}
+
+/* 返信・転送ボタン（Discord風ホバーは既存） */
+.reply-info {
+  position: absolute;
+  top: 0.25rem; right: 0.25rem;
+  display: flex; gap: 0.25rem;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+}
+.chat-message:hover .reply-info {
+  opacity: 1; pointer-events: auto;
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column; /* 各メッセージを縦に積む&#8203;:contentReference[oaicite:0]{index=0} */
+  gap: 0.5rem;
+}
+
+.chat-message {
+  position: relative;
+  display: flex;              /* ヘッダー→本文→ボタンを縦に並べないために各自制御 */
+  flex-direction: column;     /* メッセージ内は縦積み */
   padding: 0.5rem;
   border-radius: 6px;
   transition: background 0.2s, box-shadow 0.2s;
 }
+
+/* 通常ヘッダー */
+.message-header {
+  display: flex;              /* ユーザー名と時間を同じ行に */
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+/* 転送ヘッダー */
+.forwarded-header {
+  font-size: 0.85rem;
+  color: #555;
+  background: #eef;
+  padding: 0.25rem;
+  border-left: 3px solid #88f;
+  margin-bottom: 0.25rem;
+  white-space: pre-wrap;
+}
+
+/* 転送本文（淡色） */
+.forwarded-content {
+  opacity: 0.6;
+  padding: 0.25rem 0.5rem;
+  background: #f5f5f5;
+  border-radius: 4px;
+  margin-bottom: 0.25rem;
+}
+
+/* 転送元情報行 */
+.forwarded-footer {
+  font-size: 0.75rem;
+  color: #777;
+  margin-bottom: 0.5rem;
+}
+
+/* ホバー時の強調 */
 .chat-message:hover {
   background: #f0f0f0;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-/* ヘッダー＆転送ヘッダー */
+/* ボタン群 */
+.reply-info {
+  position: absolute;
+  top: 0.25rem; right: 0.25rem;
+  display: flex; gap: 0.25rem;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+}
+.chat-message:hover .reply-info {
+  opacity: 1; pointer-events: auto;
+}
+.btnReply, .btnForward {
+  background: none; border: none; cursor: pointer;
+  font-size: 1rem; line-height: 1; padding: 0.2rem;
+}
+.btnReply:hover, .btnForward:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+/* 左寄せ */
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;       /* 左寄せ */
+  text-align: left;              /* インラインテキストも左寄せ&#8203;:contentReference[oaicite:0]{index=0} */
+}
+
+/* 転送メニュー */
+.forward-menu {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  padding: 0.5rem;
+  z-index: 1000;
+}
+.forward-item {
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+}
+.forward-item:hover {
+  background: #eee;
+}
+
+/* ヘッダー全体を１行にし、左寄せ・アイテム中央揃え */
 .message-header,
 .forwarded-header {
-  display: flex;
+  display: flex;                /* フレックスで横並び&#8203;:contentReference[oaicite:0]{index=0} */
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.25rem;
 }
+
+/* ユーザー名を太字 */
 .username {
-  font-weight: bold;
+  font-weight: bold;            /* 太字に */
 }
+
+/* 日時を小さく、淡い色で */
 .timestamp {
-  font-size: 0.8rem;
+  font-size: 0.8rem;            /* 小フォント */
   color: #666;
 }
-.forwarded-header.clickable {
-  cursor: pointer;
-  text-decoration: underline;
+
+/* 転送本文は普通のテキストに戻す */
+.forwarded-content {
+  opacity: 1 !important;        /* 淡色指定を打ち消し */
+  background: none;             /* 背景色もクリア */
+  padding: 0;                   /* 余白不要ならリセット */
+  margin-bottom: 0.25rem;
 }
 
-/* 本文テキスト＆転送内容 */
+/* 本文テキスト */
 .message-text,
 .forwarded-content {
-  white-space: pre-wrap;
+  white-space: pre-wrap;        /* 改行を反映 */
 }
 
-/* 転送元情報 */
+/* 転送元行もヘッダー同様１行に */
 .forwarded-footer {
   display: flex;
   align-items: center;
@@ -295,73 +601,15 @@ td div.detail {
   margin-bottom: 0.5rem;
 }
 
-/* 返信・転送ボタン */
-.reply-info {
-  position: absolute;
-  top: 0.25rem;
-  right: 0.25rem;
+/* ヘッダーを左寄せ１行、ユーザー名太字・日時小フォント */
+.message-header,
+.forwarded-header {
   display: flex;
-  gap: 0.25rem;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
-}
-.chat-message:hover .reply-info {
-  opacity: 1;
-  pointer-events: auto;
-}
-.btnReply,
-.btnForward {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  line-height: 1;
-  padding: 0.2rem;
-  border-radius: 4px;
-}
-.btnReply:hover,
-.btnForward:hover {
-  background: rgba(0,0,0,0.05);
-}
-
-/* 画像 */
-.chat-image {
-  display: block;
-  max-width: 200px;
-  max-height: 200px;
-  margin-top: 0.5rem;
-  border-radius: 4px;
-}
-
-/* トースト全体の配置 */
-.toast-container {
-  position: fixed;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2000;
-  display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 0.5rem;
-  pointer-events: none; /* クリックを透過 */
 }
+.username { font-weight: bold; }
+.timestamp { font-size: 0.8rem; color: #666; }
 
-/* 個別トースト */
-.toast {
-  background: rgba(0,0,0,0.8);
-  color: #fff;
-  padding: 0.75rem 1.25rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  opacity: 0;
-  transform: translateY(1rem);
-  transition: opacity 0.3s, transform 0.3s;
-  pointer-events: auto;
-}
-
-/* 表示アニメーション */
-.toast.show {
-  opacity: 1;
-  transform: translateY(0);
-}
+/* 転送ヘッダーをクリック可能に */
+.forwarded-header.clickable { cursor: pointer; text-decoration: underline; }
