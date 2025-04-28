@@ -242,6 +242,8 @@ messagesEl.addEventListener('click', e => {
 
 // 独自転送メニュー
 function showForwardMenu(button, messageId) {
+  // ① 転送元メッセージID をメニュー要素に保持しておく
+  forwardMenu.dataset.messageId = messageId;
   forwardMenu.innerHTML = '';
   forwardMenu.style.display = 'block';
   roomList.forEach((r,i) => {
@@ -273,7 +275,9 @@ forwardMenu.addEventListener('click', async e => {
   const idx = e.target.dataset.idx;
   if (idx == null) return;
   const tgtRoom = roomList[parseInt(idx,10)];
-  const origSnap = await get(dbRef(db, `rooms/${category}/${roomId}/messages/${e.target.dataset.id}`));
+  // ③ メニューに保持しておいた messageId を取り出す
+  const messageId = forwardMenu.dataset.messageId;
+  const origSnap = await get(dbRef(db, `rooms/${category}/${roomId}/messages/${messageId}`));
   const orig = origSnap.val();
   await push(dbRef(db, `rooms/${tgtRoom.category}/${tgtRoom.id}/messages`), {
     uid: auth.currentUser.uid,
