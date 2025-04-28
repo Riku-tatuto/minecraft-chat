@@ -242,8 +242,8 @@ td div.detail {
   position: relative;
 }
 .reply-count {
-  color: #555;
-  cursor: pointer;
+  color: blue;       /* テキストを青色に */
+  cursor: pointer;   /* ボタンぽく手のアイコンに */
 }
 .btnReply {
   position: absolute;
