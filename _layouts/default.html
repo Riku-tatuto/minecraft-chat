@@ -1,53 +1,97 @@
+<!-- _layouts/default.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ page.title }}</title>
+  <link rel="icon" href="{{ '/minecraft-chat-board-logo.png' | relative_url }}" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="{{ '/styles.css' | relative_url }}" />
+  <style>
+    /* ── パンくずリスト ── */
+    .breadcrumbs {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      background: #f0f0f0;
+    }
+    .breadcrumbs a {
+      color: #007BFF;
+      text-decoration: none;
+      margin-right: 0.25rem;
+    }
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+    .breadcrumbs span {
+      margin-right: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  {% include navbar.html %}
+
+  <!-- パンくずリスト表示エリア -->
+  <div class="breadcrumbs" id="breadcrumbs"></div>
+
+  <main class="content">
+    {{ content }}
+  </main>
+
   <script>
     (function() {
-      // GitHub Pages のリポジトリ名を自動取得
+      const container = document.getElementById('breadcrumbs');
+      if (!container) return;
+
+      // GitHub Pages のサブディレクトリ（リポジトリ名）を自動取得
       const baseSegments = location.pathname.split('/');
       const baseurl      = baseSegments[1] ? '/' + baseSegments[1] : '';
 
-      // セグメント名 ⇒ 表示名マップ
+      // URL セグメント→表示ラベルのマップ
       const nameMap = {
-        "command":   "コマンド関連",
-        "maruti":    "マルチ募集",
-        "zatsudan":  "雑談・雑学",
-        "build":     "建築自慢",
-        "heya1":     "部屋1",
-        "heya2":     "部屋2",
-        "thread":    "返信"
+        "command":  "コマンド関連",
+        "maruti":   "マルチ募集",
+        "zatsudan": "雑談・雑学",
+        "build":    "建築自慢",
+        "heya1":    "部屋1",
+        "heya2":    "部屋2",
+        "thread":   "返信"
       };
 
-      // baseurl 部分を取り除いたパス文字列
+      // baseurl を取り除いた現在のパス文字列
       let path = location.pathname;
       if (baseurl && path.startsWith(baseurl)) {
         path = path.slice(baseurl.length);
       }
 
-      // パスから各要素を取得（先頭・末尾のスラッシュは無視）
+      // パスをセグメント分割（先頭・末尾のスラッシュを除去）
       const pathSegments = path
-        .replace(/^\//, "")
-        .replace(/\/$/, "")
-        .split("/")
+        .replace(/^\//, '')
+        .replace(/\/$/, '')
+        .split('/')
         .filter(s => s);
 
-      // ホームを最初に置く
+      // ホームを最初のパンくず要素として追加
       const crumbs = [{ name: "ホーム", url: baseurl || "/" }];
       let accum = "";
+
       pathSegments.forEach(seg => {
-        accum += `/${seg}`;
-        const display = nameMap[seg] || seg;
+        accum += "/" + seg;
+        const label = nameMap[seg] || seg;
         crumbs.push({
-          name: display,
-          url: `${baseurl || ""}${accum}/`
+          name: label,
+          url: (baseurl || "") + accum + "/"
         });
       });
 
-      // DOM に描画
-      const container = document.getElementById("breadcrumbs");
+      // DOM にレンダリング
       container.innerHTML = crumbs.map((c, i) => {
         if (i < crumbs.length - 1) {
           return `<a href="${c.url}">${c.name}</a><span>&gt;</span>`;
         } else {
           return `<span>${c.name}</span>`;
         }
-      }).join("");
+      }).join('');
     })();
   </script>
+</body>
+</html>
