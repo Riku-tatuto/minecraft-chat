@@ -624,3 +624,51 @@ td div.detail {
   color: blue;
   cursor: pointer;
 }
+
+/* ── 返信／転送ボタン間隔を広げる ── */
+.reply-info {
+  display: flex;
+  gap: 0.4rem;              /* 0.25rem → 0.4rem に拡大 */
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+/* ホバー時にボタン背景をうっすら付けて押せる感を強調 */
+.reply-info button:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* ── Discord 風チャット入力欄 ── */
+.chat-input-area {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;              /* アイコンと入力欄の間隔 */
+  padding: 0.5rem;
+  background: transparent;   /* 背景を透過 */
+  width: 100%;               /* 親コンテナいっぱいに広げる */
+  box-sizing: border-box;
+  border-radius: 4px;
+}
+
+/* テキスト入力を透過＆横幅いっぱいに */
+.chat-input-area input[type="text"] {
+  flex: 1;                   /* 残り幅すべて使う */
+  background: rgba(255,255,255,0.05);
+  border: none;
+  outline: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  color: #fff;               /* テキスト色は白など */
+}
+
+/* アイコンボタンも透過＆枠なし */
+.chat-input-area button {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
