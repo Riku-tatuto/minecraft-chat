@@ -132,9 +132,12 @@ function renderMessage(msgObj, prepend=false) {
   if (forwardedFromRoom) {
     const hdr = document.createElement('div');
     hdr.classList.add('forwarded-header');
-    hdr.textContent = `${user}  ${fmt(timestamp)}`;
+    hdr.innerHTML =
+      `<span class="username">${user}</span>` +
+      `<span class="timestamp">${fmt(timestamp)}</span>`;
     el.appendChild(hdr);
 
+    // 転送本文（通常表示）
     const orig = document.createElement('div');
     orig.classList.add('forwarded-content');
     orig.textContent = text;
@@ -142,14 +145,16 @@ function renderMessage(msgObj, prepend=false) {
 
     const ftr = document.createElement('div');
     ftr.classList.add('forwarded-footer');
-    ftr.textContent = `転送元: ${forwardedCategory} / ${forwardedFromRoom}  ${fmt(forwardedAt)}`;
+    ftr.innerHTML =
+      `転送元: <span class="username">${forwardedCategory} / ${forwardedFromRoom}</span>` +
+      `<span class="timestamp">${fmt(forwardedAt)}</span>`;
     el.appendChild(ftr);
 
   } else {
     const header = document.createElement('div');
     header.classList.add('message-header');
     header.innerHTML =
-      `<span class="username">${user}</span> ` +
+      `<span class="username">${user}</span>` +
       `<span class="timestamp">${fmt(timestamp)}</span>`;
     el.appendChild(header);
 
