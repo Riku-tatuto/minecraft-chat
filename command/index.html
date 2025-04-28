@@ -1,54 +1,97 @@
----
-layout: default
-title: コマンド関連
-permalink: /command/
----
+<!-- _layouts/default.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ page.title }}</title>
+  <link rel="icon" href="{{ '/minecraft-chat-board-logo.png' | relative_url }}" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="{{ '/styles.css' | relative_url }}" />
+  <style>
+    /* ── パンくずリスト ── */
+    .breadcrumbs {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      background: #f0f0f0;
+    }
+    .breadcrumbs a {
+      color: #007BFF;
+      text-decoration: none;
+      margin-right: 0.25rem;
+    }
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+    .breadcrumbs span {
+      margin-right: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  {% include navbar.html %}
 
-<p>コマンド関連のスレッドにようこそ！</p>
+  <!-- パンくずリスト表示エリア -->
+  <div class="breadcrumbs" id="breadcrumbs"></div>
 
-<section class="thread-section">
-  <h2 class="thread-section-title">スレッド一覧</h2>
-  <div class="thread-list">
-    <a href="{{ '/command/heya1/' | relative_url }}"
-       class="thread-btn"
-       data-room="heya1">
-      部屋1 <span class="count">(0)</span>
-    </a>
-    <a href="{{ '/command/heya2/' | relative_url }}"
-       class="thread-btn"
-       data-room="heya2">
-      部屋2 <span class="count">(0)</span>
-    </a>
-  </div>
-</section>
+  <main class="content">
+    {{ content }}
+  </main>
 
-<script type="module">
-  import { app } from '../auth.js';
-  import {
-    getDatabase,
-    ref as dbRef,
-    onValue
-  } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
+  <script>
+    (function() {
+      const container = document.getElementById('breadcrumbs');
+      if (!container) return;
 
-  const db = getDatabase(app);
+      // GitHub Pages のサブディレクトリ（リポジトリ名）を自動取得
+      const baseSegments = location.pathname.split('/');
+      const baseurl      = baseSegments[1] ? '/' + baseSegments[1] : '';
 
-  document.querySelectorAll('.thread-btn').forEach(btn => {
-    const roomId  = btn.dataset.room;
-    const countEl = btn.querySelector('.count');
-    // ここを rooms/${roomId} から rooms/command/${roomId} に変更
-    const msgsRef = dbRef(db, `rooms/command/${roomId}/messages`);
+      // URL セグメント→表示ラベルのマップ
+      const nameMap = {
+        "command":  "コマンド関連",
+        "maruti":   "マルチ募集",
+        "zatsudan": "雑談・雑学",
+        "build":    "建築自慢",
+        "heya1":    "部屋1",
+        "heya2":    "部屋2",
+        "thread":   "返信"
+      };
 
-    onValue(msgsRef, snapshot => {
-      const data = snapshot.val() || {};
-      const cnt  = Object.keys(data).length;
-      countEl.textContent = `(${cnt})`;
-    });
-  });
-</script>
+      // baseurl を取り除いた現在のパス文字列
+      let path = location.pathname;
+      if (baseurl && path.startsWith(baseurl)) {
+        path = path.slice(baseurl.length);
+      }
 
-<style>
-  .thread-list .thread-btn {
-    text-decoration: none;
-    color: inherit;
-  }
-</style>
+      // パスをセグメント分割（先頭・末尾のスラッシュを除去）
+      const pathSegments = path
+        .replace(/^\//, '')
+        .replace(/\/$/, '')
+        .split('/')
+        .filter(s => s);
+
+      // ホームを最初のパンくず要素として追加
+      const crumbs = [{ name: "ホーム", url: baseurl || "/" }];
+      let accum = "";
+
+      pathSegments.forEach(seg => {
+        accum += "/" + seg;
+        const label = nameMap[seg] || seg;
+        crumbs.push({
+          name: label,
+          url: (baseurl || "") + accum + "/"
+        });
+      });
+
+      // DOM にレンダリング
+      container.innerHTML = crumbs.map((c, i) => {
+        if (i < crumbs.length - 1) {
+          return `<a href="${c.url}">${c.name}</a><span>&gt;</span>`;
+        } else {
+          return `<span>${c.name}</span>`;
+        }
+      }).join('');
+    })();
+  </script>
+</body>
+</html>
