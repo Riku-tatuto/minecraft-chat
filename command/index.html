@@ -9,29 +9,24 @@ permalink: /command/
 <section class="thread-section">
   <h2 class="thread-section-title">スレッド一覧</h2>
   <div class="thread-list">
-    <a href="{{ '/command/heya1/' | relative_url }}" class="thread-btn">
-      部屋1 <span class="count">(...)</span>
+    <a href="{{ '/command/heya1/' | relative_url }}" class="thread-btn" data-room="heya1">
+      部屋1 <span class="count">(0)</span>
     </a>
-    <a href="{{ '/command/heya2/' | relative_url }}" class="thread-btn">
-      部屋2 <span class="count">(...)</span>
+    <a href="{{ '/command/heya2/' | relative_url }}" class="thread-btn" data-room="heya2">
+      部屋2 <span class="count">(0)</span>
     </a>
   </div>
 </section>
 
 <script type="module">
-  // ① まず auth.js から初期化済みの app をインポート
   import { app } from '../auth.js';
   import { getDatabase, ref as dbRef, get } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 
-
   async function updateCounts() {
-    // ← app を渡して Database インスタンスを取得
-    const db = getDatabase(app);         // ← 必ず app を渡す
+    const db = getDatabase(app);
     document.querySelectorAll('.thread-btn').forEach(async btn => {
-      const href = btn.getAttribute('href');      // e.g. "/command/heya1/"
-      const parts = href.split('/').filter(Boolean);
-      const category = parts[0], roomId = parts[1];
-      const snap = await get(dbRef(db, `rooms/${category}/${roomId}/messages`));
+      const room = btn.dataset.room;  // data-room 属性からルームIDを取得
+      const snap = await get(dbRef(db, `rooms/${room}/messages`));
       const data = snap.val() || {};
       const count = Object.keys(data).length;
       btn.querySelector('.count').textContent = `(${count})`;
