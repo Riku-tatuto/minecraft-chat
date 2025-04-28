@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="{{ '/styles.css' | relative_url }}" />
   <style>
-    /* パンくずリスト */
+    /* ── パンくずリスト ── */
     .breadcrumbs {
       padding: 0.5rem 1rem;
       font-size: 0.875rem;
@@ -30,6 +30,7 @@
 <body>
   {% include navbar.html %}
 
+  <!-- ここにパンくず -->
   <div class="breadcrumbs" id="breadcrumbs"></div>
 
   <main class="content">
@@ -38,37 +39,37 @@
 
   <script>
     (function() {
-      // site.baseurl を取得（GitHub Pages のリポジトリ名部分）
+      // リポジトリの baseurl を取得
       const baseurl = "{{ site.baseurl }}";
-      // パンくずマッピング
+      // セグメント名 ⇒ 表示名マップ
       const nameMap = {
-        "command": "コマンド関連",
-        "maruti":  "マルチ募集",
-        "zatsudan":"雑談・雑学",
-        "build":   "建築自慢",
-        "heya1":   "部屋1",
-        "heya2":   "部屋2",
-        "thread":  "返信"
+        "command":   "コマンド関連",
+        "maruti":    "マルチ募集",
+        "zatsudan":  "雑談・雑学",
+        "build":     "建築自慢",
+        "heya1":     "部屋1",
+        "heya2":     "部屋2",
+        "thread":    "返信"
       };
-      // パスのベースURLを除去
+      // パスから baseurl 部分を除去
       let path = location.pathname;
       if (baseurl && path.startsWith(baseurl)) {
         path = path.slice(baseurl.length);
       }
-      // 末尾スラッシュを除去しセグメント取得
-      const segments = path.replace(/\/$/,"").split("/").filter(s=>s);
-      // パンくず要素を構築
-      const crumbs = [];
-      // ホーム
-      crumbs.push({ name: "ホーム", url: `${baseurl}/` });
+      // スラッシュで分割（空要素は除去）
+      const segments = path.replace(/^\//, "").replace(/\/$/, "").split("/").filter(s=>s);
+      // ホームを最初の crumb として用意
+      const crumbs = [{ name: "ホーム", url: (baseurl||"/") }];
       let accum = "";
       segments.forEach(seg => {
         accum += `/${seg}`;
         const display = nameMap[seg] || seg;
-        const url = `${baseurl}${accum}/`;
-        crumbs.push({ name: display, url });
+        crumbs.push({
+          name: display,
+          url: `${baseurl||""}${accum}/`
+        });
       });
-      // レンダリング
+      // DOM にレンダリング
       const container = document.getElementById("breadcrumbs");
       container.innerHTML = crumbs.map((c,i) => {
         if (i < crumbs.length - 1) {
