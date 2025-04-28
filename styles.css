@@ -683,3 +683,61 @@ td div.detail {
   text-decoration: none;
   color: #1e90ff;                   /* 好みのホバー色 */
 }
+
+/* ── アクションメニューを枠付きでホバー表示 ── */
+.chat-message {
+  position: relative;
+  padding-right: 4rem; /* メニュー幅分余白 */
+}
+
+/* メニュー本体 */
+.action-menu {
+  display: flex;
+  gap: 0.5rem;
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  transform: translateY(-50%);
+  background: rgba(32,34,37,0.9);
+  border: 1px solid rgba(79,84,92,0.9);
+  border-radius: 4px;
+  padding: 0.25rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s ease-in-out;
+}
+
+/* ホバーで表示 */
+.chat-message:hover .action-menu {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* メニュー内のボタン・カウント */
+.action-menu button,
+.action-menu .reply-count {
+  background: none;
+  border: none;
+  color: #b9bbbe;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.action-menu button:hover,
+.action-menu .reply-count:hover {
+  color: #dcddde;
+}
+
+/* 返信件数の数字だけ表示（"件の返信" は要素外で補足可） */
+.reply-count::after {
+  content: '件';
+  margin-left: 0.1rem;
+  font-size: 0.75rem;
+  color: #72767d;
+}
+
+/* 転送元情報などはそのまま */
+.forward-info {
+  font-size: 0.75rem;
+  color: #888;
+  margin-bottom: 0.25rem;
+}
