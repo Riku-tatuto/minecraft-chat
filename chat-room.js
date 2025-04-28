@@ -41,7 +41,7 @@ function dispRoom(id) {
   return id;
 }
 
-// ── トースト表示関数 ──
+// トースト表示関数
 function showToast(message, duration = 3000) {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
@@ -55,7 +55,7 @@ function showToast(message, duration = 3000) {
   }, duration);
 }
 
-// ── DOM 挿入 ──
+// DOM 挿入
 document.body.insertAdjacentHTML('beforeend', `
   <div id="chat-container">
     <h2>ルーム: ${dispCategory(category)} / ${dispRoom(roomId)}</h2>
@@ -76,6 +76,10 @@ const imgInput    = document.getElementById('imgInput');
 const btnImg      = document.getElementById('btnImg');
 const inputEl     = document.getElementById('msgInput');
 const btnSend     = document.getElementById('btnSend');
+
+// make sure forwardMenu is top‐level so it won't block clicks
+document.body.appendChild(forwardMenu);
+forwardMenu.style.zIndex = '1000';
 
 // IME 判定
 let isComposing = false;
@@ -147,7 +151,7 @@ loadRoomList();
 function renderMessage(msgObj, prepend = false) {
   const {
     key, user, text, imageBase64, timestamp,
-    forwardedFromRoom, forwardedCategory, forwardedAt
+    replies, forwardedFromRoom, forwardedCategory, forwardedAt
   } = msgObj;
 
   function fmt(ts) {
@@ -172,8 +176,7 @@ function renderMessage(msgObj, prepend = false) {
       `<span class="username">${user}</span>` +
       `<span class="timestamp">${fmt(timestamp)}</span>`;
     hdr.addEventListener('click', () => {
-      const targetKey = key;
-      const url = `${location.origin}${repo}/${forwardedCategory}/${forwardedFromRoom}?scrollTo=${targetKey}`;
+      const url = `${location.origin}${repo}/${forwardedCategory}/${forwardedFromRoom}?scrollTo=${key}`;
       location.href = url;
     });
     el.appendChild(hdr);
@@ -208,6 +211,20 @@ function renderMessage(msgObj, prepend = false) {
     el.appendChild(body);
   }
 
+  // 返信カウント
+  const replyCount = replies ? Object.keys(replies).length : 0;
+  if (replyCount > 0) {
+    const countSpan = document.createElement('span');
+    countSpan.classList.add('reply-count');
+    countSpan.dataset.id = key;
+    countSpan.textContent = `${replyCount}件の返信`;
+    // クリックで返信ページへ
+    countSpan.addEventListener('click', () => {
+      window.location.href = `${location.origin}${repo}/${category}/${roomId}/thread/?id=${key}`;
+    });
+    el.appendChild(countSpan);
+  }
+
   if (imageBase64) {
     const img = document.createElement('img');
     img.src = imageBase64;
@@ -234,7 +251,7 @@ function renderMessage(msgObj, prepend = false) {
   else        messagesEl.appendChild(el);
 }
 
-// 初回ロード→自動スクロール対応
+// 初回ロード→自動スクロール
 async function loadInitial() {
   const q = query(messagesRef, orderByChild('timestamp'), limitToLast(PAGE_SIZE));
   const snap = await get(q);
