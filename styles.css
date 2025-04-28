@@ -683,3 +683,20 @@ td div.detail {
   text-decoration: none;
   color: #1e90ff;                   /* 好みのホバー色 */
 }
+
+/* styles.css に以下を追加してください */
+
+.chat-message {
+  /* ボタン用のスペースをさらに確保 */
+  padding-right: 4rem;
+}
+
+.btnForward {
+  /* 転送ボタンを少し内側に */
+  right: 1rem;
+}
+
+.btnReply {
+  /* 返信ボタンは転送ボタンの左側に */
+  right: 3rem;
+}
