@@ -599,3 +599,16 @@ td div.detail {
   color: #777;
   margin-bottom: 0.5rem;
 }
+
+/* ヘッダーを左寄せ１行、ユーザー名太字・日時小フォント */
+.message-header,
+.forwarded-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.username { font-weight: bold; }
+.timestamp { font-size: 0.8rem; color: #666; }
+
+/* 転送ヘッダーをクリック可能に */
+.forwarded-header.clickable { cursor: pointer; text-decoration: underline; }
