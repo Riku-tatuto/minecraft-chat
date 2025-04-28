@@ -251,11 +251,21 @@ function showForwardMenu(button, messageId) {
     item.dataset.idx = i;
     forwardMenu.appendChild(item);
   });
-  // 表示位置を画面基準で調整
-  const rect = button.getBoundingClientRect();
-  forwardMenu.style.position = 'absolute';
+  // ① 一度表示して幅を確定させる
+  forwardMenu.style.display = 'block';
+  // ② ボタンの座標とメニュー幅を取得
+  const rect   = button.getBoundingClientRect();
+  const menuW  = forwardMenu.offsetWidth;
+  const pageW  = window.innerWidth;
+
+  // ③ 左位置を計算: 画面右端を超えるなら左側に寄せる
+  let left = rect.left + window.scrollX;
+  if (left + menuW > pageW) {
+    // ボタンの右端に合わせてメニュー右端を合わせる
+    left = rect.right + window.scrollX - menuW;
+  }
   forwardMenu.style.top  = `${rect.bottom + window.scrollY}px`;
-  forwardMenu.style.left = `${rect.left   + window.scrollX}px`;
+  forwardMenu.style.left = `${left}px`;
 }
 
 // メニュー選択で転送
