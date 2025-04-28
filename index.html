@@ -4,26 +4,74 @@ title: ホーム
 permalink: /index.html
 ---
 
-
 <section class="thread-section">
   <h2 class="thread-section-title">スレッド一覧</h2>
   <div class="thread-list">
-    <a href="maruti/" class="thread-btn">マルチ募集 <span class="count">(5)</span></a>
-    <a href="command/" class="thread-btn">コマンド関連 <span class="count">(5)</span></a>
-    <a href="index.html/zatsudan" class="thread-btn">雑談・雑学 <span class="count">(12)</span></a>
-    <a href="index.html/build" class="thread-btn">建築自慢 <span class="count">(8)</span></a>
+    <a href="maruti/" class="thread-btn" data-room="maruti">
+      マルチ募集 <span class="count">(0)</span>
+    </a>
+    <a href="command/" class="thread-btn" data-rooms="command/heya1,command/heya2">
+      コマンド関連 <span class="count">(0)</span>
+    </a>
+    <a href="zatsudan/" class="thread-btn" data-room="zatsudan">
+      雑談・雑学 <span class="count">(0)</span>
+    </a>
+    <a href="build/" class="thread-btn" data-room="build">
+      建築自慢 <span class="count">(0)</span>
+    </a>
   </div>
 </section>
 
 <div id="content"></div>
 
 <script type="module">
-  import { auth, observeAuth, logout } from './auth.js';
+  import { getDatabase, ref as dbRef, onValue } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
+  import { app, auth, observeAuth, logout } from './auth.js';
 
+  // 初期セットアップ
+  const db = getDatabase(app);
+
+  // スレッド一覧のカウント更新
+  document.querySelectorAll('.thread-btn').forEach(btn => {
+    const countEl = btn.querySelector('.count');
+    const counts  = {};
+    let paths     = [];
+
+    if (btn.dataset.rooms) {
+      paths = btn.dataset.rooms.split(',');
+    } else if (btn.dataset.room) {
+      paths = [ btn.dataset.room ];
+    }
+
+    paths.forEach(path => {
+      const msgsRef = dbRef(db, `rooms/${path}/messages`);
+      onValue(msgsRef, snapshot => {
+        const data = snapshot.val() || {};
+        counts[path] = Object.keys(data).length;
+        const total = Object.values(counts).reduce((sum, val) => sum + val, 0);
+        countEl.textContent = `(${total})`;
+      });
+    });
+  });
+
+  // ナビバーの認証状態表示
   const navUser   = document.getElementById('navUser');
   const navLogin  = document.getElementById('navLogin');
   const navLogout = document.getElementById('navLogout');
-  const contentEl = document.getElementById('content');
+
+  observeAuth(user => {
+    if (user && user.emailVerified) {
+      navUser.textContent    = user.displayName + ' さん';
+      navLogin.style.display  = 'none';
+      navLogout.style.display = '';
+      document.getElementById('content').textContent = 'ようこそ！最新情報を確認できます。';
+    } else {
+      navUser.textContent    = '';
+      navLogin.style.display  = '';
+      navLogout.style.display = 'none';
+      document.getElementById('content').textContent = 'ログインすると最新情報を確認できます。';
+    }
+  });
 
   navLogout.addEventListener('click', () => {
     logout();
