@@ -247,7 +247,7 @@ td div.detail {
 .btnReply {
   position: absolute;
   top: 0;
-  right: 1.5rem;  /* 転送ボタンと重ならないように */
+  right: 2.5rem;  /* 転送ボタンと重ならないように */
   background: none;
   border: none;
   cursor: pointer;
@@ -260,7 +260,7 @@ td div.detail {
 .btnForward {
   position: absolute;
   top: 0;
-  right: 0;
+  right: 0.5;
   background: none;
   border: none;
   cursor: pointer;
