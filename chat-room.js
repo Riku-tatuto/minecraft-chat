@@ -41,7 +41,21 @@ function dispRoom(id) {
   return id;
 }
 
-// DOM 挿入
+// ── トースト表示関数 ──
+function showToast(message, duration = 3000) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  container.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+  }, duration);
+}
+
+// ── DOM 挿入 ──
 document.body.insertAdjacentHTML('beforeend', `
   <div id="chat-container">
     <h2>ルーム: ${dispCategory(category)} / ${dispRoom(roomId)}</h2>
@@ -54,6 +68,7 @@ document.body.insertAdjacentHTML('beforeend', `
     </div>
   </div>
   <div id="forwardMenu" class="forward-menu" style="display:none;"></div>
+  <div id="toast-container" class="toast-container"></div>
 `);
 const messagesEl  = document.getElementById('messages');
 const forwardMenu = document.getElementById('forwardMenu');
@@ -126,6 +141,7 @@ async function loadRoomList() {
     }
   }
 }
+loadRoomList();
 
 // メッセージ描画
 function renderMessage(msgObj, prepend = false) {
@@ -218,7 +234,7 @@ function renderMessage(msgObj, prepend = false) {
   else        messagesEl.appendChild(el);
 }
 
-// 初回ロード→新着→古い読み込み
+// 初回ロード→自動スクロール対応
 async function loadInitial() {
   const q = query(messagesRef, orderByChild('timestamp'), limitToLast(PAGE_SIZE));
   const snap = await get(q);
@@ -233,7 +249,6 @@ async function loadInitial() {
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  // URL パラメータ scrollTo があれば該当メッセージへスクロール
   const params = new URLSearchParams(location.search);
   const scrollToKey = params.get('scrollTo');
   if (scrollToKey) {
@@ -322,7 +337,7 @@ forwardMenu.addEventListener('click', async e => {
   const messageId = forwardMenu.dataset.messageId;
   const origSnap  = await get(dbRef(db, `rooms/${category}/${roomId}/messages/${messageId}`));
   const orig      = origSnap.val();
-  if (!orig) { alert('元メッセージが見つかりませんでした'); return; }
+  if (!orig) { showToast('元メッセージが見つかりませんでした'); return; }
   await push(dbRef(db, `rooms/${tgtRoom.category}/${tgtRoom.id}/messages`), {
     uid:        auth.currentUser.uid,
     user:       auth.currentUser.displayName || auth.currentUser.email,
@@ -333,8 +348,8 @@ forwardMenu.addEventListener('click', async e => {
     forwardedAt:         Date.now(),
     timestamp:           Date.now()
   });
+  showToast(`メッセージを「${tgtRoom.label}」へ転送しました`);
   forwardMenu.style.display = 'none';
-  alert(`メッセージを「${tgtRoom.label}」へ転送しました`);
 });
 
 // 画面クリックでメニューを閉じる
