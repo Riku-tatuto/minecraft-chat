@@ -613,3 +613,14 @@ td div.detail {
 
 /* 転送ヘッダーをクリック可能に */
 .forwarded-header.clickable { cursor: pointer; text-decoration: underline; }
+
+.chat-input-area button img,
+.reply-info button img {
+  width: 24px;
+  height: 24px;
+}
+
+.reply-count {
+  color: blue;
+  cursor: pointer;
+}
