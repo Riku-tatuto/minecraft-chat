@@ -1,48 +1,9 @@
-<!-- _layouts/default.html -->
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <title>{{ page.title }}</title>
-  <link rel="icon" href="{{ '/minecraft-chat-board-logo.png' | relative_url }}" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="{{ '/styles.css' | relative_url }}" />
-  <style>
-    /* ── パンくずリスト ── */
-    .breadcrumbs {
-      padding: 0.5rem 1rem;
-      font-size: 0.875rem;
-      background: #f0f0f0;
-    }
-    .breadcrumbs a {
-      color: #007BFF;
-      text-decoration: none;
-      margin-right: 0.25rem;
-    }
-    .breadcrumbs a:hover {
-      text-decoration: underline;
-    }
-    .breadcrumbs span {
-      margin-right: 0.25rem;
-    }
-  </style>
-</head>
-<body>
-  {% include navbar.html %}
-
-  <!-- ここにパンくず -->
-  <div class="breadcrumbs" id="breadcrumbs"></div>
-
-  <main class="content">
-    {{ content }}
-  </main>
-
   <script>
     (function() {
-      // GitHub Pages のサブフォルダ名を動的に取得
-      // https://<user>.github.io/<repo>/... の <repo> 部分を baseurl に
-      const segments = location.pathname.split('/');
-      const baseurl  = segments[1] ? '/' + segments[1] : '';
+      // GitHub Pages のリポジトリ名を自動取得
+      const baseSegments = location.pathname.split('/');
+      const baseurl      = baseSegments[1] ? '/' + baseSegments[1] : '';
+
       // セグメント名 ⇒ 表示名マップ
       const nameMap = {
         "command":   "コマンド関連",
@@ -53,27 +14,35 @@
         "heya2":     "部屋2",
         "thread":    "返信"
       };
-      // パスから baseurl を取り除く
+
+      // baseurl 部分を取り除いたパス文字列
       let path = location.pathname;
       if (baseurl && path.startsWith(baseurl)) {
         path = path.slice(baseurl.length);
       }
-      // スラッシュで分割（空要素は除去）
-      const segments = path.replace(/^\//, "").replace(/\/$/, "").split("/").filter(s=>s);
-      // ホームを最初の crumb として用意
-      const crumbs = [{ name: "ホーム", url: (baseurl||"/") }];
+
+      // パスから各要素を取得（先頭・末尾のスラッシュは無視）
+      const pathSegments = path
+        .replace(/^\//, "")
+        .replace(/\/$/, "")
+        .split("/")
+        .filter(s => s);
+
+      // ホームを最初に置く
+      const crumbs = [{ name: "ホーム", url: baseurl || "/" }];
       let accum = "";
-      segments.forEach(seg => {
+      pathSegments.forEach(seg => {
         accum += `/${seg}`;
         const display = nameMap[seg] || seg;
         crumbs.push({
           name: display,
-          url: `${baseurl||""}${accum}/`
+          url: `${baseurl || ""}${accum}/`
         });
       });
-      // DOM にレンダリング
+
+      // DOM に描画
       const container = document.getElementById("breadcrumbs");
-      container.innerHTML = crumbs.map((c,i) => {
+      container.innerHTML = crumbs.map((c, i) => {
         if (i < crumbs.length - 1) {
           return `<a href="${c.url}">${c.name}</a><span>&gt;</span>`;
         } else {
@@ -82,5 +51,3 @@
       }).join("");
     })();
   </script>
-</body>
-</html>
