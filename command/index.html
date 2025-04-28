@@ -19,13 +19,14 @@ permalink: /command/
 </section>
 
 <script type="module">
-  // ← ここで auth.js を読み込み、initializeApp を実行済みの app を取得する
-  import { app } from '../auth.js';  
+  // ① まず auth.js から初期化済みの app をインポート
+  import { app } from '../auth.js';
   import { getDatabase, ref as dbRef, get } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
+
 
   async function updateCounts() {
     // ← app を渡して Database インスタンスを取得
-    const db = getDatabase(app);  
+    const db = getDatabase(app);         // ← 必ず app を渡す
     document.querySelectorAll('.thread-btn').forEach(async btn => {
       const href = btn.getAttribute('href');      // e.g. "/command/heya1/"
       const parts = href.split('/').filter(Boolean);
