@@ -672,3 +672,15 @@ td div.detail {
   padding: 0;
   cursor: pointer;
 }
+
+/* スレッド一覧のリンク下線を消す */
+.thread-list .thread-btn {
+  text-decoration: none;            /* 下線を消す :contentReference[oaicite:0]{index=0} */
+  color: inherit;                   /* テキスト色を親に合わせる */
+}
+
+/* ホバー時に色だけ変えたい場合 */
+.thread-list .thread-btn:hover {
+  text-decoration: none;
+  color: #1e90ff;                   /* 好みのホバー色 */
+}
