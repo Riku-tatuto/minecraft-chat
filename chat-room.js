@@ -77,10 +77,6 @@ const btnImg      = document.getElementById('btnImg');
 const inputEl     = document.getElementById('msgInput');
 const btnSend     = document.getElementById('btnSend');
 
-// make sure forwardMenu is top‐level so it won't block clicks
-document.body.appendChild(forwardMenu);
-forwardMenu.style.zIndex = '1000';
-
 // IME 判定
 let isComposing = false;
 inputEl.addEventListener('compositionstart', () => { isComposing = true; });
@@ -175,7 +171,8 @@ function renderMessage(msgObj, prepend = false) {
     hdr.innerHTML =
       `<span class="username">${user}</span>` +
       `<span class="timestamp">${fmt(timestamp)}</span>`;
-    hdr.addEventListener('click', () => {
+    hdr.addEventListener('click', e => {
+      e.stopPropagation();
       const url = `${location.origin}${repo}/${forwardedCategory}/${forwardedFromRoom}?scrollTo=${key}`;
       location.href = url;
     });
@@ -218,8 +215,8 @@ function renderMessage(msgObj, prepend = false) {
     countSpan.classList.add('reply-count');
     countSpan.dataset.id = key;
     countSpan.textContent = `${replyCount}件の返信`;
-    // クリックで返信ページへ
-    countSpan.addEventListener('click', () => {
+    countSpan.addEventListener('click', e => {
+      e.stopPropagation();
       window.location.href = `${location.origin}${repo}/${category}/${roomId}/thread/?id=${key}`;
     });
     el.appendChild(countSpan);
@@ -239,11 +236,19 @@ function renderMessage(msgObj, prepend = false) {
   replyBtn.classList.add('btnReply');
   replyBtn.dataset.id = key;
   replyBtn.textContent = '🗨️';
+  replyBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    window.location.href = `${location.origin}${repo}/${category}/${roomId}/thread/?id=${key}`;
+  });
   info.appendChild(replyBtn);
   const fwdBtn = document.createElement('button');
   fwdBtn.classList.add('btnForward');
   fwdBtn.dataset.id = key;
   fwdBtn.textContent = '⤴️';
+  fwdBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    showForwardMenu(fwdBtn, key);
+  });
   info.appendChild(fwdBtn);
   el.appendChild(info);
 
@@ -311,17 +316,6 @@ async function init() {
   loadInitial();
 }
 init();
-
-// クリック処理：返信・転送
-messagesEl.addEventListener('click', e => {
-  const tgt = e.target;
-  if (tgt.classList.contains('btnReply')) {
-    window.location.href = `${location.origin}${repo}/${category}/${roomId}/thread/?id=${tgt.dataset.id}`;
-  }
-  if (tgt.classList.contains('btnForward')) {
-    showForwardMenu(tgt, tgt.dataset.id);
-  }
-});
 
 // 転送メニュー表示
 function showForwardMenu(button, messageId) {
