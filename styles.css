@@ -555,3 +555,47 @@ td div.detail {
 .forward-item:hover {
   background: #eee;
 }
+
+/* ヘッダー全体を１行にし、左寄せ・アイテム中央揃え */
+.message-header,
+.forwarded-header {
+  display: flex;                /* フレックスで横並び&#8203;:contentReference[oaicite:0]{index=0} */
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+/* ユーザー名を太字 */
+.username {
+  font-weight: bold;            /* 太字に */
+}
+
+/* 日時を小さく、淡い色で */
+.timestamp {
+  font-size: 0.8rem;            /* 小フォント */
+  color: #666;
+}
+
+/* 転送本文は普通のテキストに戻す */
+.forwarded-content {
+  opacity: 1 !important;        /* 淡色指定を打ち消し */
+  background: none;             /* 背景色もクリア */
+  padding: 0;                   /* 余白不要ならリセット */
+  margin-bottom: 0.25rem;
+}
+
+/* 本文テキスト */
+.message-text,
+.forwarded-content {
+  white-space: pre-wrap;        /* 改行を反映 */
+}
+
+/* 転送元行もヘッダー同様１行に */
+.forwarded-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #777;
+  margin-bottom: 0.5rem;
+}
