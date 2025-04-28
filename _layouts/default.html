@@ -39,8 +39,10 @@
 
   <script>
     (function() {
-      // リポジトリの baseurl を取得
-      const baseurl = "{{ site.baseurl }}";
+      // GitHub Pages のサブフォルダ名を動的に取得
+      // https://<user>.github.io/<repo>/... の <repo> 部分を baseurl に
+      const segments = location.pathname.split('/');
+      const baseurl  = segments[1] ? '/' + segments[1] : '';
       // セグメント名 ⇒ 表示名マップ
       const nameMap = {
         "command":   "コマンド関連",
@@ -51,7 +53,7 @@
         "heya2":     "部屋2",
         "thread":    "返信"
       };
-      // パスから baseurl 部分を除去
+      // パスから baseurl を取り除く
       let path = location.pathname;
       if (baseurl && path.startsWith(baseurl)) {
         path = path.slice(baseurl.length);
