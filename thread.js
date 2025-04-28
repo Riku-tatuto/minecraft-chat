@@ -28,10 +28,12 @@ onValue(dbRef(db, `rooms/${category}/${roomId}/messages/${messageId}`), snap => 
               `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   mainEl.innerHTML = `
     <div class="chat-message">
-      <span class="username">${msg.user}</span>
-      <span class="timestamp">${fmt}</span>
+      <div class="message-header">
+        <span class="username">${msg.user}</span>
+        <span class="timestamp">${fmt}</span>
+      </div>
+      <div class="message-text">${msg.text}</div>
     </div>
-    <div class="message-text">${msg.text}</div>
   `;
   if (msg.imageBase64) {
     const img = document.createElement('img');
@@ -97,8 +99,10 @@ onValue(dbRef(db, `rooms/${category}/${roomId}/messages/${messageId}/replies`), 
     const el = document.createElement('div');
     el.classList.add('chat-message');
     el.innerHTML = `
-      <span class="username">${msg.user}</span>
-      <span class="timestamp">${fmt}</span>
+      <div class="message-header">
+        <span class="username">${msg.user}</span>
+        <span class="timestamp">${fmt}</span>
+      </div>
       <div class="message-text">${msg.text}</div>
     `;
     repliesEl.appendChild(el);
