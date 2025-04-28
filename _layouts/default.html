@@ -1,3 +1,4 @@
+<!-- _layouts/default.html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -6,36 +7,77 @@
   <link rel="icon" href="{{ '/minecraft-chat-board-logo.png' | relative_url }}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="{{ '/styles.css' | relative_url }}" />
+  <style>
+    /* パンくずリスト */
+    .breadcrumbs {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      background: #f0f0f0;
+    }
+    .breadcrumbs a {
+      color: #007BFF;
+      text-decoration: none;
+      margin-right: 0.25rem;
+    }
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+    .breadcrumbs span {
+      margin-right: 0.25rem;
+    }
+  </style>
 </head>
 <body>
   {% include navbar.html %}
+
+  <div class="breadcrumbs" id="breadcrumbs"></div>
+
   <main class="content">
     {{ content }}
   </main>
 
-  <!-- 認証状態に応じてナビバーを更新 -->
-  <script type="module">
-    import { observeAuth, logout } from '{{ "/auth.js" | relative_url }}';
-
-    const navUser   = document.getElementById('navUser');
-    const navLogin  = document.getElementById('navLogin');
-    const navLogout = document.getElementById('navLogout');
-
-    observeAuth(user => {
-      if (user && user.emailVerified) {
-        navUser.textContent    = user.displayName + ' さん';
-        navLogin.style.display  = 'none';
-        navLogout.style.display = '';
-      } else {
-        navUser.textContent    = '';
-        navLogin.style.display  = '';
-        navLogout.style.display = 'none';
+  <script>
+    (function() {
+      // site.baseurl を取得（GitHub Pages のリポジトリ名部分）
+      const baseurl = "{{ site.baseurl }}";
+      // パンくずマッピング
+      const nameMap = {
+        "command": "コマンド関連",
+        "maruti":  "マルチ募集",
+        "zatsudan":"雑談・雑学",
+        "build":   "建築自慢",
+        "heya1":   "部屋1",
+        "heya2":   "部屋2",
+        "thread":  "返信"
+      };
+      // パスのベースURLを除去
+      let path = location.pathname;
+      if (baseurl && path.startsWith(baseurl)) {
+        path = path.slice(baseurl.length);
       }
-    });
-
-    navLogout.addEventListener('click', () => {
-      logout();
-    });
+      // 末尾スラッシュを除去しセグメント取得
+      const segments = path.replace(/\/$/,"").split("/").filter(s=>s);
+      // パンくず要素を構築
+      const crumbs = [];
+      // ホーム
+      crumbs.push({ name: "ホーム", url: `${baseurl}/` });
+      let accum = "";
+      segments.forEach(seg => {
+        accum += `/${seg}`;
+        const display = nameMap[seg] || seg;
+        const url = `${baseurl}${accum}/`;
+        crumbs.push({ name: display, url });
+      });
+      // レンダリング
+      const container = document.getElementById("breadcrumbs");
+      container.innerHTML = crumbs.map((c,i) => {
+        if (i < crumbs.length - 1) {
+          return `<a href="${c.url}">${c.name}</a><span>&gt;</span>`;
+        } else {
+          return `<span>${c.name}</span>`;
+        }
+      }).join("");
+    })();
   </script>
 </body>
 </html>
