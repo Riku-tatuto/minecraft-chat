@@ -6,6 +6,7 @@
   <title>{{ page.title }}</title>
   <link rel="icon" href="{{ '/minecraft-chat-board-logo.png' | relative_url }}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Jekyll がここで正しく展開します -->
   <link rel="stylesheet" href="{{ '/styles.css' | relative_url }}" />
   <style>
     /* ── パンくずリスト ── */
@@ -28,9 +29,10 @@
   </style>
 </head>
 <body>
+  <!-- ナビバー -->
   {% include navbar.html %}
 
-  <!-- パンくずリスト表示エリア -->
+  <!-- パンくずリスト -->
   <div class="breadcrumbs" id="breadcrumbs"></div>
 
   <main class="content">
@@ -42,35 +44,35 @@
       const container = document.getElementById('breadcrumbs');
       if (!container) return;
 
-      // GitHub Pages のサブディレクトリ（リポジトリ名）を自動取得
+      // リポジトリ名をベースURLとして自動取得
       const baseSegments = location.pathname.split('/');
       const baseurl      = baseSegments[1] ? '/' + baseSegments[1] : '';
 
-      // URL セグメント→表示ラベルのマップ
+      // URL セグメント→表示ラベル
       const nameMap = {
-        "command":  "コマンド関連",
-        "maruti":   "マルチ募集",
-        "zatsudan": "雑談・雑学",
-        "build":    "建築自慢",
-        "heya1":    "部屋1",
-        "heya2":    "部屋2",
-        "thread":   "返信"
+        command:  "コマンド関連",
+        maruti:   "マルチ募集",
+        zatsudan: "雑談・雑学",
+        build:    "建築自慢",
+        heya1:    "部屋1",
+        heya2:    "部屋2",
+        thread:   "返信"
       };
 
-      // baseurl を取り除いた現在のパス文字列
+      // baseurl を取り除いたパス
       let path = location.pathname;
       if (baseurl && path.startsWith(baseurl)) {
         path = path.slice(baseurl.length);
       }
 
-      // パスをセグメント分割（先頭・末尾のスラッシュを除去）
+      // パスを分割してセグメント配列に
       const pathSegments = path
         .replace(/^\//, '')
         .replace(/\/$/, '')
         .split('/')
         .filter(s => s);
 
-      // ホームを最初のパンくず要素として追加
+      // 「ホーム」を最初に
       const crumbs = [{ name: "ホーム", url: baseurl || "/" }];
       let accum = "";
 
@@ -83,7 +85,7 @@
         });
       });
 
-      // DOM にレンダリング
+      // DOMに描画
       container.innerHTML = crumbs.map((c, i) => {
         if (i < crumbs.length - 1) {
           return `<a href="${c.url}">${c.name}</a><span>&gt;</span>`;
