@@ -1,7 +1,7 @@
 ---
 layout: default
 title: コマンド関連
-permalink: /command/
+permalink: /maruti/
 ---
 
 <p>コマンド関連のスレッドにようこそ！</p>
@@ -9,47 +9,29 @@ permalink: /command/
 <section class="thread-section">
   <h2 class="thread-section-title">スレッド一覧</h2>
   <div class="thread-list">
-    <a href="{{ '/command/heya1/' | relative_url }}"
-       class="thread-btn"
-       data-room="command/heya1">
-      部屋1 <span class="count">(0)</span>
-    </a>
-    <a href="{{ '/command/heya2/' | relative_url }}"
-       class="thread-btn"
-       data-room="command/heya2">
-      部屋2 <span class="count">(0)</span>
-    </a>
+    <a href="{{ '/command/heya1/' | relative_url }}" class="thread-btn">部屋1 <span class="count">(0)</span></a>
+    <a href="{{ '/command/heya2/' | relative_url }}" class="thread-btn">部屋2 <span class="count">(0)</span></a>
   </div>
 </section>
 
+<div id="content"></div>
+
 <script type="module">
-  import { app } from '../auth.js';
-  import {
-    getDatabase,
-    ref as dbRef,
-    onValue
-  } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
+  import { observeAuth, logout } from '../auth.js';
+  const navUser = document.getElementById('navUser');
+  const navLogin = document.getElementById('navLogin');
+  const navLogout = document.getElementById('navLogout');
 
-  const db = getDatabase(app);
-
-  document.querySelectorAll('.thread-btn').forEach(btn => {
-    // data-room 属性に rooms 配下のパスを入れておく
-    const path = btn.dataset.room;            // "command/heya1" など
-    const countEl = btn.querySelector('.count');
-    const msgsRef = dbRef(db, `rooms/${path}/messages`);
-
-    // リアルタイムでメッセージ数をカウント
-    onValue(msgsRef, snap => {
-      const data = snap.val() || {};
-      const cnt  = Object.keys(data).length;
-      countEl.textContent = `(${cnt})`;
-    });
+  observeAuth(user => {
+    if (user) {
+      navUser.textContent = user.displayName || user.email;
+      navLogin.style.display = 'none';
+      navLogout.style.display = 'inline';
+    } else {
+      navUser.textContent = '';
+      navLogin.style.display = 'inline';
+      navLogout.style.display = 'none';
+    }
   });
+  navLogout.addEventListener('click', () => logout());
 </script>
-
-<style>
-  .thread-list .thread-btn {
-    text-decoration: none;
-    color: inherit;
-  }
-</style>
